@@ -13,7 +13,7 @@
 setTimeout(function () {
   //helper functions
   function makeInput(id, type, name) {
-    return '<label for="' + id + '">'+name+'</label><input id="'+id+'" type="'+type+'">';
+    return '<label for="' + id + '">'+name+'</label><input id="'+id+'" type="'+type+'"><br>';
   }
   function makeCombo(id, name, data, keys=null) {
     const label = '<label for="' + id + '">'+name+'</label><select id="'+id+'">';
@@ -24,7 +24,7 @@ setTimeout(function () {
     for(var i = 0; i < keys.length; ++i) {
       options += '<option value="'+keys[i]+'">'+String(data[keys[i]])+'</option>';
     }
-    return label + options + '</select>';
+    return label + options + '</select><br>';
   }
 
   // remove the loader
