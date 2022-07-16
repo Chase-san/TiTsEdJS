@@ -20,12 +20,8 @@ over it not working on thier old Amiga or some such.
 
 ## How to use this PoS?
 
-Good question! You copy and past it into your console for now, or you could use
-this lovely snipped of code to do it for you, but who would do that?
-
-`(function(){var L=document.createElement("script");L.id="te_loader";L.src="https://raw.githubusercontent.com/Chase-san/TiTsEdJS/master/titsed.js";document.head.appendChild(L);})();`
-
-Just slap that in your console and you have a fun new box on the screen.
+Good question! You copy and past it into your console for now. I'm working on
+the problem, but there is no simple solution due to XSS security.
 
 After that it's fairly straight forward,a dn if you don't understand it, it's
 really not my problem. Why is that you ask? That is due to the fancy disclosure
