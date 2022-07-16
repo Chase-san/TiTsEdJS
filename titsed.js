@@ -11,6 +11,8 @@
 
 // Inject TiTsEdJS
 setTimeout(function () {
+  // remove the loader
+  jQuery('#te_loader').remove();
   jQuery('body').append(`<div id="titsed">
   <h4>TiTsEdJS PoC</h4>
 	<table><tr>

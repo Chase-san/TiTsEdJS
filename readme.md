@@ -23,7 +23,9 @@ over it not working on thier old Amiga or some such.
 Good question! You copy and past it into your console for now, or you could use
 this lovely snipped of code to do it for you, but who would do that?
 
-`lovely snippet of code to do all the hard work for you goes here`
+`(function(){var L=document.createElement("script");L.id="te_loader";L.src="https://raw.githubusercontent.com/Chase-san/TiTsEdJS/master/titsed.js";document.head.appendChild(L);})();`
+
+Just slap that in your console and you have a fun new box on the screen.
 
 After that it's fairly straight forward,a dn if you don't understand it, it's
 really not my problem. Why is that you ask? That is due to the fancy disclosure
