@@ -33,10 +33,12 @@ the address bar to get the same result. Browsers automatically remove
 `javascript:` when pasted, SO YOU MUST TYPE IT MANUALLY!
 
 After that it's fairly straight forward, and if you don't understand it, it's
-really not my problem. Why is that you ask? That is due to the fancy disclosure
+really not my problem. Why is that you ask? That is due to the fancy disclaimer
 that follows.
 
-## Disclosure
+## Disclaimer
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
 
-You use this entirely at your own risk, and if it so happens to do something
-from your use, I am in no way liable for any it, good or bad.
+See the License for more details.
