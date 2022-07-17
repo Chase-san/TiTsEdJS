@@ -28,6 +28,10 @@ javscript console.
 
 `(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.getElementsByTagName("head")[0].appendChild(s)})()`
 
+On chrome, if you type in `javascript:` and then paste the previous after it in
+the address bar to get the same result. Browsers automatically remove
+`javascript:` when pasted, so YOU MUST TYPE IT MANUALLY!
+
 After that it's fairly straight forward,a dn if you don't understand it, it's
 really not my problem. Why is that you ask? That is due to the fancy disclosure
 that follows.
