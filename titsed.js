@@ -26,9 +26,6 @@ setTimeout(function () {
     }
     return label + options + '</select><br>';
   }
-
-  // remove the loader
-  jQuery('#te_loader').remove();
   jQuery('body').append(`<div id="titsed">
   <h3>TiTsEdJS PoC</h3>
   <div id="te_data"></div>
