@@ -18,7 +18,7 @@ upon is rather niche (Windows, so maybe not so niche) and has been a great
 source of annoyance to me for many years and people have contacted me regularly
 over it not working on thier old Amiga or some such.
 
-## How to use this PoS?
+## How to use this tool?
 
 Good question! You copy and past it into your console for now. I'm working on
 the problem, but there is no simple solution due to XSS security.

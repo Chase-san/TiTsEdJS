@@ -50,6 +50,7 @@ setTimeout(function () {
 		#titsed>h4{margin:1ex;text-align:center;}
     #titsed>table{width:100%;}
 		#titsed input,#titsed button{width:100%;}
+    #titsed label{padding-right: 1ex;}
 	</style>`);
   //construct tables
   const ted = jQuery("#te_data");
