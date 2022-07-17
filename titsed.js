@@ -27,6 +27,8 @@
   #${id_prefix} > #${id_prefix}_data {
     overflow-y: scroll;
     height: calc(100% - 80px);
+    scrollbar-width: auto;
+    scrollbar-color: auto;
   }
   #${id_prefix} > h3 {
     margin: 1ex;
@@ -67,7 +69,7 @@
     <td><button id="${id_prefix}_load">Load</button></td>
     <td><button id="${id_prefix}_save">Save</button></td>
   </tr></table>
-  <div id="${id_prefix}_data"></div>`;
+  <div id="${id_prefix}_data"><p>You must load a save before loading.</p></div>`;
   document.body.appendChild(app);
 
   function getById(id) {
