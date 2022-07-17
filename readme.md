@@ -26,7 +26,7 @@ the problem, but there is no simple solution due to XSS security.
 For the moment you can simply copy and paste the following into your browsers
 javscript console.
 
-`(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.getElementsByTagName("head")[0].appendChild(s)})()`
+`(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
 
 On chrome, if you type in `javascript:` and then paste the previous after it in
 the address bar to get the same result. Browsers automatically remove
