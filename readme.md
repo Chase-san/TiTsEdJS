@@ -20,19 +20,19 @@ over it not working on thier old Amiga or some such.
 
 ## How to use this tool?
 
-Good question! You copy and past it into your console for now. I'm working on
-the problem, but there is no simple solution due to XSS security.
+Good question! It's not very straight forward unfortuantely. I'm working on the
+problem, but there is no simple solution due to XSS security.
 
 For the moment you can simply copy and paste the following into your browsers
-javscript console.
+javscript console while playing TiTs.
 
 `(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
 
 On chrome, if you type in `javascript:` and then paste the previous after it in
 the address bar to get the same result. Browsers automatically remove
-`javascript:` when pasted, so YOU MUST TYPE IT MANUALLY!
+`javascript:` when pasted, SO YOU MUST TYPE IT MANUALLY!
 
-After that it's fairly straight forward,a dn if you don't understand it, it's
+After that it's fairly straight forward, and if you don't understand it, it's
 really not my problem. Why is that you ask? That is due to the fancy disclosure
 that follows.
 
