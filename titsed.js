@@ -2,7 +2,7 @@
 
 (async function () {
   //setup all basic UI elements
-  const version = "v0.2";
+  const version = "v0.3";
   const id_prefix = "titsed";
   const fg_color = "#000";
   const bg_color = "#f4f4f4";
@@ -10,16 +10,133 @@
   const left_arrow = "&#9664;";
   const editor_width = 420;
 
-  /* The ones built into TiTs are not accurate (for some reason). */
-  const valid_ass_flags = [3, 11, 30, 37, 40, 41, 47, 51];
-  const valid_areola_flags = [40, 52, 53, 54];
-  const valid_arm_flags = [1, 3, 4, 6, 12, 13, 19, 20, 21, 22, 23, 34, 35, 37, 38, 48];
-  const valid_cock_flags = [2, 3, 6, 7, 8, 9, 10, 11, 12, 19, 21, 25, 26, 28, 29, 30, 31, 33, 36, 37, 44, 48];
-  const valid_ear_flags = [1, 7, 20, 21, 34, 49, 50];
-  const valid_leg_flags = [1, 2, 3, 4, 6, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 37, 48];
-  const valid_skin_flags = [3, 4, 5, 6, 11, 12, 13, 19, 20, 21, 34, 35, 37, 39, 46, 48];
-  const valid_tongue_flags = [1, 2, 3, 5, 7, 11, 12, 30, 32, 37];
-  const valid_vagina_flags = [3, 11, 18, 25, 30, 33, 37, 40, 41, 44, 45, 47, 51];
+  function createValidityLists() {
+    //this function assumes unique string values
+    function sortKeysByValue(name_list) {
+      const keys = Object.keys(name_list);
+      const inverse = {};
+      var output = [];
+      var values = [];
+      for (var i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+        const value = name_list[key];
+        values.push(value);
+        inverse[value] = Number(key);
+      }
+      values.sort();
+      for (var i = 0; i < values.length; ++i) {
+        output.push(inverse[values[i]]);
+      }
+      return output;
+    }
+    function matchRefOrder(input, ref) {
+      //if we have anything left over, pin it to the end
+      const inref = input.slice();
+      const output = [];
+      for (var i = 0; i < ref.length; ++i) {
+        const value = ref[i];
+        const index = inref.indexOf(value);
+        if (index !== -1) {
+          output.push(value);
+          inref.splice(index, 1);
+        }
+      }
+      inref.forEach((e) => output.push(e));
+      return output;
+    }
+    function unique(input) {
+      const output = [];
+      input.forEach((e) => {
+        if (output.indexOf(e) === -1) {
+          output.push(e);
+        }
+      });
+      return output;
+    }
+
+    const sorted_type_names = sortKeysByValue(GLOBAL.TYPE_NAMES);
+
+    /* The ones built into TiTs are not accurate for some reason. */
+    /* Flags */
+    const valid_ass_flags = [3, 11, 30, 37, 40, 41, 47, 51];
+    const valid_areola_flags = [40, 52, 53, 54];
+    const valid_arm_flags = [1, 3, 4, 6, 12, 13, 19, 20, 21, 22, 23, 34, 35, 37, 38, 48];
+    const valid_cock_flags = [2, 3, 6, 7, 8, 9, 10, 11, 12, 19, 21, 25, 26, 28, 29, 30, 31, 33, 36, 37, 44, 48];
+    const valid_crotch_flags = [57, 58];
+    const valid_ear_flags = [1, 7, 20, 21, 34, 49, 50];
+    const valid_face_flags = [1, 6, 14, 15, 20, 21, 34, 35, 43, 46];
+    const valid_leg_flags = [1, 2, 3, 4, 6, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 37, 48];
+    const valid_skin_flags = [3, 4, 5, 6, 11, 12, 13, 19, 20, 21, 34, 35, 37, 39, 46, 48];
+    const valid_tongue_flags = [1, 2, 3, 5, 7, 11, 12, 30, 32, 37];
+    const valid_vagina_flags = [3, 11, 18, 25, 30, 33, 37, 40, 41, 44, 45, 47, 51];
+
+    /* Types */
+    const valid_antenna_types = [0, 6, 16, 43, 60, 64, 81];
+    const valid_arm_types = [
+      0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 19, 20, 23, 24, 26, 28, 40, 45, 46, 49, 51, 52, 53, 55, 57, 60, 65, 66, 69, 67, 75, 77, 81, 82, 88, 89,
+      90, 93,
+    ];
+    const valid_cock_types = [
+      0, 1, 3, 4, 5, 6, 9, 10, 11, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 29, 34, 42, 43, 46, 50, 51, 52, 53, 54, 55, 56, 57, 60, 61, 64, 65, 66, 69, 70,
+      72, 78, 79, 81, 82, 85, 88, 90, 93,
+    ];
+    const valid_ear_types = [
+      0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 14, 15, 17, 18, 19, 20, 21, 24, 26, 29, 40, 42, 45, 46, 49, 50, 51, 52, 53, 57, 58, 59, 65, 66, 71, 72, 73, 75, 76,
+      77, 81, 82, 88, 89, 90, 93,
+    ];
+    const valid_eye_types = [
+      0, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21, 42, 49, 50, 51, 53, 54, 55, 60, 65, 66, 69, 71, 76, 80, 81, 82, 85, 87, 88, 93,
+    ];
+    const valid_face_types = [
+      0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 12, 14, 17, 18, 19, 20, 21, 24, 25, 26, 27, 39, 40, 42, 45, 50, 52, 57, 66, 69, 71, 72, 75, 76, 77, 81, 82, 87, 88, 89,
+      90, 93,
+    ];
+    const valid_horn_types = [0, 2, 11, 12, 15, 21, 30, 50, 62, 63, 65, 76, 82, 87, 88, 90];
+    const valid_leg_types = [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 23, 24, 26, 28, 32, 35, 40, 42, 45, 46, 49, 50, 51, 52, 53, 55, 56, 57, 60, 64,
+      65, 66, 69, 72, 75, 76, 77, 81, 82, 85, 88, 89, 90, 91, 93,
+    ];
+    const valid_tail_types = [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21, 23, 24, 26, 29, 33, 40, 42, 43, 45, 46, 49, 51, 52, 53, 54, 57, 60, 65, 66, 69, 72,
+      75, 76, 77, 82, 87, 88, 89, 91, 93,
+    ];
+    const valid_tongue_types = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 13, 14, 15, 16, 23, 40, 42, 45, 49, 57, 65, 66, 69, 81, 82, 88];
+    const valid_vagina_types = [0, 1, 3, 4, 5, 6, 7, 10, 13, 16, 18, 19, 20, 21, 24, 44, 46, 49, 51, 55, 56, 65, 66, 67, 69, 72, 74, 82, 88];
+    const valid_wing_types = [0, 6, 10, 11, 15, 19, 23, 28, 31, 36, 37, 38, 54, 58, 59, 60, 65, 81, 82, 85];
+
+    /* Update our valid types with whatever the game also thinks is valid. In case we go awhile without updating. */
+    return {
+      FLAGS: {
+        ASS: valid_ass_flags,
+        AREOLA: unique(valid_areola_flags, GLOBAL.VALID_AREOLA_FLAGS),
+        ARM: unique(valid_arm_flags, GLOBAL.VALID_ARM_FLAGS),
+        COCK: unique(valid_cock_flags, GLOBAL.VALID_COCK_FLAGS),
+        CROTCH: valid_crotch_flags,
+        EAR: valid_ear_flags,
+        FACE: unique(valid_face_flags, GLOBAL.VALID_FACE_FLAGS),
+        LEG: unique(valid_leg_flags, GLOBAL.VALID_LEG_FLAGS),
+        SKIN: unique(valid_skin_flags, GLOBAL.VALID_SKIN_FLAGS),
+        TONGUE: unique(valid_tongue_flags, GLOBAL.VALID_TONGUE_FLAGS),
+        VAGINA: unique(valid_vagina_flags, GLOBAL.VALID_VAGINA_FLAGS),
+      },
+      TYPES: {
+        ANTENNA: matchRefOrder(unique(valid_antenna_types.concat(GLOBAL.VALID_ANTENNAE_TYPES)), sorted_type_names),
+        ARM: matchRefOrder(unique(valid_arm_types.concat(GLOBAL.VALID_ARM_TYPES)), sorted_type_names),
+        COCK: matchRefOrder(unique(valid_cock_types.concat(GLOBAL.VALID_COCK_TYPES)), sorted_type_names),
+        EAR: matchRefOrder(unique(valid_ear_types.concat(GLOBAL.VALID_EAR_TYPES)), sorted_type_names),
+        EYE: matchRefOrder(unique(valid_eye_types.concat(GLOBAL.VALID_EYE_TYPES)), sorted_type_names),
+        FACE: matchRefOrder(unique(valid_face_types.concat(GLOBAL.VALID_FACE_TYPES)), sorted_type_names),
+        HORN: matchRefOrder(unique(valid_horn_types.concat(GLOBAL.VALID_HORN_TYPES)), sorted_type_names),
+        LEG: matchRefOrder(unique(valid_leg_types.concat(GLOBAL.VALID_LEG_TYPES)), sorted_type_names),
+        TAIL: matchRefOrder(unique(valid_tail_types.concat(GLOBAL.VALID_TAIL_TYPES)), sorted_type_names),
+        TONGUE: matchRefOrder(unique(valid_tongue_types.concat(GLOBAL.VALID_TONGUE_TYPES)), sorted_type_names),
+        VAGINA: matchRefOrder(unique(valid_vagina_types.concat(GLOBAL.VALID_VAGINA_TYPES)), sorted_type_names),
+        WING: matchRefOrder(unique(valid_wing_types.concat(GLOBAL.VALID_WING_TYPES)), sorted_type_names),
+      },
+    };
+  }
+
+  const VALID = createValidityLists();
 
   const style = document.createElement("style");
   style.innerHTML = `
@@ -200,25 +317,6 @@
     }
   }
 
-  function sortKeysByValue(name_list) {
-    //this function assumes unique string values
-    const keys = Object.keys(name_list);
-    const inverse = {};
-    var output = [];
-    var values = [];
-    for (var i = 0; i < keys.length; ++i) {
-      const key = keys[i];
-      const value = name_list[key];
-      values.push(value);
-      inverse[value] = key;
-    }
-    values.sort();
-    for (var i = 0; i < values.length; ++i) {
-      output.push(inverse[values[i]]);
-    }
-    return output;
-  }
-
   function createHeader(text) {
     const header = document.createElement("h4");
     header.innerHTML = text;
@@ -253,17 +351,32 @@
     return createTableRow([label], "th");
   }
 
-  function createBooleanControlRow(name, obj, id) {
+  function createBooleanControlRow(name, obj, id, is_bool = true) {
     const label = document.createTextNode(name);
     const e = document.createElement("input");
     e.type = "checkbox";
     const data = new Data(obj, id, e);
-    data.load = function () {
-      this.element.checked = this.value;
-    };
-    data.save = function () {
-      this.value = this.element.checked;
-    };
+    if (is_bool === "bool") {
+      data.load = function () {
+        this.element.checked = this.value;
+      };
+      data.save = function () {
+        this.value = this.element.checked;
+      };
+    } else {
+      //then it's a number
+      data.load = function () {
+        this.element.checked = !!this.value;
+      };
+      data.save = function () {
+        if (this.element.checked) {
+          this.value = 1;
+        } else {
+          this.value = 0;
+        }
+      };
+    }
+
     data_list.push(data);
     return createTableRow([label, e]);
   }
@@ -370,214 +483,277 @@
     return createTableRow([button]);
   }
 
-  const sorted_type_names = sortKeysByValue(GLOBAL.TYPE_NAMES);
+  function buildAssTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow2("Hip Size", pc, "hipRatingRaw", "hipRatingMod"));
+    table.appendChild(createNumberControlRow2("Butt Size", pc, "buttRatingRaw", "buttRatingMod"));
+    table.appendChild(createBooleanControlRow("Anal Virgin", pc, "analVirgin"));
+    table.appendChild(createNumberControlRow("Anal Capacity", pc.ass, "bonusCapacity"));
+    table.appendChild(createNumberControlRow2("Anal Looseness", pc.ass, "loosenessRaw", "loosenessMod"));
+    table.appendChild(createNumberControlRow2("Anal Wetness", pc.ass, "wetnessRaw", "wetnessMod"));
+    table.appendChild(createFlagRow("Flags", pc.ass, "flags", "ass_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.ASS));
+    return table;
+  }
 
-  function build_ui() {
-    const controls = getById(`${id_prefix}_data`);
-    controls.innerHTML = "";
+  function buildBodyTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Tone", pc, "tone"));
+    table.appendChild(createNumberControlRow("Thickness", pc, "thickness"));
+    table.appendChild(createNumberControlRow2("Belly", pc, "bellyRatingRaw", "bellyRatingMod"));
+    table.appendChild(createComboControlRow("Skin Type", pc, "skinType", GLOBAL.SKIN_TYPE_NAMES));
+    table.appendChild(createFlagRow("Skin Flags", pc, "skinFlags", "skin_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.SKIN));
+    table.appendChild(createTextControlRow("Skin Tone", pc, "skinTone"));
+    table.appendChild(createTextControlRow("Skin Accent", pc, "skinAccent"));
+    table.appendChild(createTextControlRow("Fur Color", pc, "furColor"));
+    table.appendChild(createTextControlRow("Scale Color", pc, "scaleColor"));
+    table.appendChild(createComboControlRow("Arm Type", pc, "armType", GLOBAL.TYPE_NAMES, VALID.TYPES.ARM));
+    table.appendChild(createFlagRow("Arm Flags", pc, "armFlags", "arm_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.ARM));
+    table.appendChild(createNumberControlRow("Leg Count", pc, "legCount"));
+    table.appendChild(createComboControlRow("Leg Type", pc, "legType", GLOBAL.TYPE_NAMES, VALID.TYPES.LEG));
+    table.appendChild(createFlagRow("Leg Flags", pc, "legFlags", "leg_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.LEG));
+    table.appendChild(createNumberControlRow("Wing Count", pc, "wingCount"));
+    table.appendChild(createComboControlRow("Wing Type", pc, "wingType", GLOBAL.TYPE_NAMES, VALID.TYPES.WING));
+    return table;
+  }
 
-    //these may not work
-    controls.appendChild(createHeader("Stats"));
-    const stats_table = createTable();
-    stats_table.appendChild(createNumberControlRow("Shields", pc, "shieldsRaw"));
-    stats_table.appendChild(createNumberControlRow("Health", pc, "HPRaw"));
-    stats_table.appendChild(createNumberControlRow("Lust", pc, "lustRaw"));
-    stats_table.appendChild(createNumberControlRow("Energy", pc, "energyRaw"));
-    stats_table.appendChild(createNumberControlRow2("Physique", pc, "physiqueRaw", "physiqueMod"));
-    stats_table.appendChild(createNumberControlRow2("Reflexes", pc, "reflexesRaw", "reflexesMod"));
-    stats_table.appendChild(createNumberControlRow2("Aim", pc, "aimRaw", "aimMod"));
-    stats_table.appendChild(createNumberControlRow2("Intelligence", pc, "intelligenceRaw", "intelligenceMod"));
-    stats_table.appendChild(createNumberControlRow2("Willpower", pc, "willpowerRaw", "willpowerMod"));
-    stats_table.appendChild(createNumberControlRow2("Libido", pc, "libidoRaw", "libidoMod"));
-    stats_table.appendChild(createNumberControlRow2("Taint", pc, "taintRaw", "taintMod"));
-    controls.appendChild(stats_table);
+  function buildBreastsTable() {
+    const table = createTable();
+    //TODO convert this into it's own data type
+    table.appendChild(createTextRow("Add/Remove (TODO)"));
+    for (var i = 0; i < pc.breastRows.length; ++i) {
+      table.appendChild(createHeaderRow(`Breast Row ${i}`));
+      table.appendChild(createNumberControlRow("Count", pc.breastRows[i], "breasts"));
+      table.appendChild(createNumberControlRow2("Rating", pc.breastRows[i], "breastRatingRaw", "breastRatingMod"));
+      table.appendChild(createNumberControlRow("Lactation", pc.breastRows[i], "breastRatingLactationMod"));
+      table.appendChild(createNumberControlRow("Honeypot", pc.breastRows[i], "breastRatingHoneypotMod"));
+      table.appendChild(createNumberControlRow("Fullness", pc.breastRows[i], "fullness"));
+      table.appendChild(createComboControlRow("Nipple", pc.breastRows[i], "nippleType", GLOBAL.NIPPLE_TYPE_NAMES));
+      table.appendChild(createFlagRow("Areola Flags", pc.breastRows[i], "areolaFlags", `br${i}_areola_flag`, GLOBAL.FLAG_NAMES, VALID.FLAGS.AREOLA));
+    }
+    return table;
+  }
 
-    controls.appendChild(createHeader("Profile"));
-    const profile_table = createTable();
-    profile_table.appendChild(createNumberControlRow("Credits", pc, "credits"));
-    profile_table.appendChild(createNumberControlRow("Height", pc, "tallness"));
-    profile_table.appendChild(createNumberControlRow("Personality", pc, "personality"));
-    profile_table.appendChild(createNumberControlRow("Exhibitionism", pc, "exhibitionismRaw"));
-    controls.appendChild(profile_table);
+  function buildCheatTable() {
+    const table = createTable();
+    if (!("CHEATS_ENABLED" in flags)) {
+      flags["CHEATS_ENABLED"] = 0;
+    }
+    table.appendChild(createBooleanControlRow("Enabled", flags, "CHEATS_ENABLED"));
+    // if (!('CHEATS_USED' in flags)) {
+    //   flags['CHEATS_USED'] = 0;
+    // }
+    // table.appendChild(createNumberControlRow('Used', flags, 'CHEATS_USED'));
+    return table;
+  }
 
-    controls.appendChild(createHeader("Head"));
-    const head_table = createTable();
-    head_table.appendChild(createComboControlRow("Hair Type", pc, "hairType", GLOBAL.HAIR_TYPE_NAMES));
-    head_table.appendChild(createTextControlRow("Hair Color", pc, "hairColor"));
-    head_table.appendChild(createNumberControlRow("Hair Length", pc, "hairLength"));
-    head_table.appendChild(createComboControlRow("Ear Type", pc, "earType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    head_table.appendChild(createNumberControlRow("Ear Length", pc, "earLength"));
-    head_table.appendChild(createFlagRow("Ear Flags", pc, "earFlags", "ear_flag", GLOBAL.FLAG_NAMES, valid_ear_flags));
-    head_table.appendChild(createNumberControlRow("Antennae Count", pc, "antennae"));
-    head_table.appendChild(createComboControlRow("Antennae Type", pc, "antennaeType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    head_table.appendChild(createNumberControlRow("Horn Count", pc, "horns"));
-    head_table.appendChild(createComboControlRow("Horn Type", pc, "hornType", GLOBAL.TYPE_NAMES));
-    head_table.appendChild(createNumberControlRow("Horn Length", pc, "hornLength"));
-    head_table.appendChild(createBooleanControlRow("Gills", pc, "gills"));
-    controls.appendChild(head_table);
+  function buildCockTable() {
+    const table = createTable();
+    //TODO convert this into it's own data type
+    table.appendChild(createTextRow("Add/Remove (TODO)"));
+    for (var i = 0; i < pc.cocks.length; ++i) {
+      table.appendChild(createHeaderRow(`Cock ${i}`));
+      table.appendChild(createComboControlRow("Type", pc.cocks[i], "cType", GLOBAL.TYPE_NAMES, VALID.TYPES.COCK));
+      table.appendChild(createTextControlRow("Color", pc.cocks[i], "cockColor"));
+      table.appendChild(createNumberControlRow2("Length", pc.cocks[i], "cLengthRaw", "cLengthMod"));
+      table.appendChild(createNumberControlRow2("Thickness Ratio", pc.cocks[i], "cThicknessRatioRaw", "cThicknessRatioMod"));
+      table.appendChild(createNumberControlRow("Flaccid Multiplier", pc.cocks[i], "flaccidMultiplier"));
+      table.appendChild(createNumberControlRow("Knot Multiplier", pc.cocks[i], "knotMultiplier"));
+      table.appendChild(createFlagRow("Flags", pc.cocks[i], "flags", `c${i}_flag`, GLOBAL.FLAG_NAMES, VALID.FLAGS.COCK));
+      table.appendChild(createBooleanControlRow("Virgin", pc.cocks[i], "virgin"));
+      // cocksock: null,
+      // piercing: null,
+    }
+    return table;
+  }
 
-    controls.appendChild(createHeader("Face"));
-    const face_table = createTable();
-    face_table.appendChild(createNumberControlRow("Femininity", pc, "femininity"));
-    face_table.appendChild(createComboControlRow("Face Type", pc, "faceType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    face_table.appendChild(createComboControlRow("Eye Type", pc, "eyeType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    face_table.appendChild(createTextControlRow("Eye Color", pc, "eyeColor"));
-    face_table.appendChild(createNumberControlRow("Lip Size", pc, "lipMod"));
-    face_table.appendChild(createTextControlRow("Lip Color", pc, "lipColor"));
-    face_table.appendChild(createComboControlRow("Tongue Type", pc, "tongueType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    face_table.appendChild(createFlagRow("Tongue Flags", pc, "tongueFlags", "tongue_flag", GLOBAL.FLAG_NAMES, valid_tongue_flags));
+  function buildFaceTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Femininity", pc, "femininity"));
+    table.appendChild(createComboControlRow("Face Type", pc, "faceType", GLOBAL.TYPE_NAMES, VALID.TYPES.FACE));
+    table.appendChild(createFlagRow("Face Flags", pc, "faceFlags", "face_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.FACE));
+    table.appendChild(createComboControlRow("Eye Type", pc, "eyeType", GLOBAL.TYPE_NAMES, VALID.TYPES.EYE));
+    table.appendChild(createTextControlRow("Eye Color", pc, "eyeColor"));
+    table.appendChild(createNumberControlRow("Lip Size", pc, "lipMod"));
+    table.appendChild(createTextControlRow("Lip Color", pc, "lipColor"));
+    table.appendChild(createComboControlRow("Tongue Type", pc, "tongueType", GLOBAL.TYPE_NAMES, VALID.TYPES.TONGUE));
+    table.appendChild(createFlagRow("Tongue Flags", pc, "tongueFlags", "tongue_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.TONGUE));
+    return table;
+  }
 
-    controls.appendChild(face_table);
+  function buildGenitalTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Elasticity", pc, "elasticity"));
+    table.appendChild(createComboControlRow("Genital Spot", pc, "genitalSpot", GLOBAL.GENITAL_SPOT_NAMES));
+    table.appendChild(createFlagRow("Crotch Flags", pc, "crotchFlags", "crotch_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.CROTCH));
+    table.appendChild(createBooleanControlRow("Cock Virgin", pc, "cockVirgin"));
+    table.appendChild(createBooleanControlRow("Vagina Virgin", pc, "vaginalVirgin"));
 
-    controls.appendChild(createHeader("Body"));
-    const body_table = createTable();
-    body_table.appendChild(createNumberControlRow("Tone", pc, "tone"));
-    body_table.appendChild(createNumberControlRow("Thickness", pc, "thickness"));
-    body_table.appendChild(createNumberControlRow2("Belly", pc, "bellyRatingRaw", "bellyRatingMod"));
-    body_table.appendChild(createComboControlRow("Skin Type", pc, "skinType", GLOBAL.SKIN_TYPE_NAMES));
-    body_table.appendChild(createFlagRow("Skin Flags", pc, "skinFlags", "skin_flag", GLOBAL.FLAG_NAMES, valid_skin_flags));
-    body_table.appendChild(createTextControlRow("Skin Tone", pc, "skinTone"));
-    body_table.appendChild(createTextControlRow("Skin Accent", pc, "skinAccent"));
-    body_table.appendChild(createTextControlRow("Fur Color", pc, "furColor"));
-    body_table.appendChild(createTextControlRow("Scale Color", pc, "scaleColor"));
-    body_table.appendChild(createComboControlRow("Arm Type", pc, "armType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    body_table.appendChild(createFlagRow("Arm Flags", pc, "armFlags", "arm_flag", GLOBAL.FLAG_NAMES, valid_arm_flags));
-    body_table.appendChild(createNumberControlRow("Leg Count", pc, "legCount"));
-    body_table.appendChild(createComboControlRow("Leg Type", pc, "legType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    body_table.appendChild(createFlagRow("Leg Flags", pc, "legFlags", "leg_flag", GLOBAL.FLAG_NAMES, valid_leg_flags));
-    body_table.appendChild(createNumberControlRow("Wing Count", pc, "wingCount"));
-    body_table.appendChild(createComboControlRow("Wing Type", pc, "wingType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    controls.appendChild(body_table);
+    table.appendChild(createNumberControlRow("Balls", pc, "balls"));
+    table.appendChild(createNumberControlRow("Ball Size", pc, "ballSizeRaw", "ballSizeMod"));
+    table.appendChild(createNumberControlRow("Ball Fullness", pc, "ballFullness"));
+    table.appendChild(createNumberControlRow("Ball Efficiency", pc, "ballEfficiency"));
+    table.appendChild(createNumberControlRow("Refractory Rate", pc, "refractoryRate"));
+    table.appendChild(createComboControlRow("Cum Type", pc, "cumType", GLOBAL.FLUID_TYPE_NAMES));
+    table.appendChild(createNumberControlRow2("Cum Multiplier", pc, "cumMultiplierRaw", "cumMultiplierMod"));
+    table.appendChild(createNumberControlRow2("Cum Quality", pc, "cumQualityRaw", "cumQualityMod"));
 
-    controls.appendChild(createHeader("Tail"));
-    const tail_table = createTable();
-    tail_table.appendChild(createNumberControlRow("Count", pc, "tailCount"));
-    tail_table.appendChild(createComboControlRow("Type", pc, "tailType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    tail_table.appendChild(createComboControlRow("Cum Type", pc, "tailCumType", GLOBAL.FLUID_TYPE_NAMES));
-    tail_table.appendChild(createComboControlRow("GCum Type", pc, "tailGirlCumType", GLOBAL.FLUID_TYPE_NAMES));
+    table.appendChild(createComboControlRow("GCum Type", pc, "girlCumType", GLOBAL.FLUID_TYPE_NAMES));
+    table.appendChild(createNumberControlRow2("GCum Multiplier", pc, "girlCumMultiplierRaw", "girlCumMultiplierMod"));
+    return table;
+  }
+
+  function buildHeadTable() {
+    const table = createTable();
+    table.appendChild(createComboControlRow("Hair Type", pc, "hairType", GLOBAL.HAIR_TYPE_NAMES));
+    table.appendChild(createTextControlRow("Hair Color", pc, "hairColor"));
+    table.appendChild(createNumberControlRow("Hair Length", pc, "hairLength"));
+    table.appendChild(createComboControlRow("Ear Type", pc, "earType", GLOBAL.TYPE_NAMES, VALID.TYPES.EAR));
+    table.appendChild(createNumberControlRow("Ear Length", pc, "earLength"));
+    table.appendChild(createFlagRow("Ear Flags", pc, "earFlags", "ear_flag", GLOBAL.FLAG_NAMES, VALID.FLAGS.EAR));
+    table.appendChild(createNumberControlRow("Antennae Count", pc, "antennae"));
+    table.appendChild(createComboControlRow("Antennae Type", pc, "antennaeType", GLOBAL.TYPE_NAMES, VALID.TYPES.ANTENNA));
+    table.appendChild(createNumberControlRow("Horn Count", pc, "horns"));
+    table.appendChild(createComboControlRow("Horn Type", pc, "hornType", GLOBAL.TYPE_NAMES));
+    table.appendChild(createNumberControlRow("Horn Length", pc, "hornLength"));
+    table.appendChild(createBooleanControlRow("Gills", pc, "gills"));
+    return table;
+  }
+
+  function buildMilkTable() {
+    const table = createTable();
+    table.appendChild(createComboControlRow("Type", pc, "milkType", GLOBAL.FLUID_TYPE_NAMES));
+    table.appendChild(createNumberControlRow("Fullness", pc, "milkFullness"));
+    table.appendChild(createNumberControlRow("Rate", pc, "milkRate"));
+    table.appendChild(createNumberControlRow("Multiplier", pc, "milkMultiplier"));
+    table.appendChild(createNumberControlRow("Storage Multiplier", pc, "milkStorageMultiplier"));
+    return table;
+  }
+
+  function buildNippleTable() {
+    const table = createTable();
+    table.appendChild(createTextControlRow("Color", pc, "nippleColor"));
+    table.appendChild(createNumberControlRow("Length Ratio", pc, "nippleLengthRatio"));
+    table.appendChild(createNumberControlRow("Width Ratio", pc, "nippleWidthRatio"));
+    table.appendChild(createNumberControlRow("Per Breast", pc, "nipplesPerBreast"));
+    table.appendChild(createComboControlRow("DickN Type", pc, "dickNippleType", GLOBAL.TYPE_NAMES, VALID.TYPES.COCK)); //TODO probably wrong
+    table.appendChild(createNumberControlRow("DickN Multiplier", pc, "dickNippleMultiplier"));
+    return table;
+  }
+
+  function buildProfileTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Credits", pc, "credits"));
+    table.appendChild(createNumberControlRow("Height", pc, "tallness"));
+    table.appendChild(createNumberControlRow("Personality", pc, "personality"));
+    table.appendChild(createNumberControlRow("Exhibitionism", pc, "exhibitionismRaw"));
+    return table;
+  }
+
+  function buildStatsTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Shields", pc, "shieldsRaw"));
+    table.appendChild(createNumberControlRow("Health", pc, "HPRaw"));
+    table.appendChild(createNumberControlRow("Lust", pc, "lustRaw"));
+    table.appendChild(createNumberControlRow("Energy", pc, "energyRaw"));
+    table.appendChild(createNumberControlRow2("Physique", pc, "physiqueRaw", "physiqueMod"));
+    table.appendChild(createNumberControlRow2("Reflexes", pc, "reflexesRaw", "reflexesMod"));
+    table.appendChild(createNumberControlRow2("Aim", pc, "aimRaw", "aimMod"));
+    table.appendChild(createNumberControlRow2("Intelligence", pc, "intelligenceRaw", "intelligenceMod"));
+    table.appendChild(createNumberControlRow2("Willpower", pc, "willpowerRaw", "willpowerMod"));
+    table.appendChild(createNumberControlRow2("Libido", pc, "libidoRaw", "libidoMod"));
+    table.appendChild(createNumberControlRow2("Taint", pc, "taintRaw", "taintMod"));
+    return table;
+  }
+
+  function buildTailTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Count", pc, "tailCount"));
+    table.appendChild(createComboControlRow("Type", pc, "tailType", GLOBAL.TYPE_NAMES, VALID.TYPES.TAIL));
+    table.appendChild(createComboControlRow("Cum Type", pc, "tailCumType", GLOBAL.FLUID_TYPE_NAMES));
+    table.appendChild(createComboControlRow("GCum Type", pc, "tailGirlCumType", GLOBAL.FLUID_TYPE_NAMES));
     // tailVenom
     // tailRecharge
     // tailFlags
     // tailCunt //obj
     // tailCock //obj
-    controls.appendChild(tail_table);
+    return table;
+  }
 
-    controls.appendChild(createHeader("Breasts"));
-    const chest_table = createTable();
+  function buildVaginaTable() {
+    const table = createTable();
+    table.appendChild(createNumberControlRow("Clit Length", pc, "clitLength"));
+    table.appendChild(createNumberControlRow2("Fertility", pc, "fertilityRaw", "fertilityMod"));
     //TODO convert this into it's own data type/creater
-    chest_table.appendChild(createTextRow("Add/Remove (TODO)"));
-    for (var i = 0; i < pc.breastRows.length; ++i) {
-      chest_table.appendChild(createHeaderRow(`Breast Row ${i}`));
-      chest_table.appendChild(createNumberControlRow("Count", pc.breastRows[i], "breasts"));
-      chest_table.appendChild(createNumberControlRow2("Rating", pc.breastRows[i], "breastRatingRaw", "breastRatingMod"));
-      chest_table.appendChild(createNumberControlRow("Lactation", pc.breastRows[i], "breastRatingLactationMod"));
-      chest_table.appendChild(createNumberControlRow("Honeypot", pc.breastRows[i], "breastRatingHoneypotMod"));
-      chest_table.appendChild(createNumberControlRow("Fullness", pc.breastRows[i], "fullness"));
-      chest_table.appendChild(createComboControlRow("Nipple", pc.breastRows[i], "nippleType", GLOBAL.NIPPLE_TYPE_NAMES));
-      chest_table.appendChild(createFlagRow("Areola Flags", pc.breastRows[i], "areolaFlags", `br${i}_areola_flag`, GLOBAL.FLAG_NAMES, valid_areola_flags));
-    }
-    controls.appendChild(chest_table);
-
-    controls.appendChild(createHeader("Nipple"));
-    const nipple_table = createTable();
-    nipple_table.appendChild(createTextControlRow("Color", pc, "nippleColor"));
-    nipple_table.appendChild(createNumberControlRow("Length Ratio", pc, "nippleLengthRatio"));
-    nipple_table.appendChild(createNumberControlRow("Width Ratio", pc, "nippleWidthRatio"));
-    nipple_table.appendChild(createNumberControlRow("Per Breast", pc, "nipplesPerBreast"));
-    nipple_table.appendChild(createComboControlRow("DickN Type", pc, "dickNippleType", GLOBAL.TYPE_NAMES, sorted_type_names));
-    nipple_table.appendChild(createNumberControlRow("DickN Multiplier", pc, "dickNippleMultiplier"));
-    controls.appendChild(nipple_table);
-
-    controls.appendChild(createHeader("Milk"));
-    const milk_table = createTable();
-    milk_table.appendChild(createComboControlRow("Type", pc, "milkType", GLOBAL.FLUID_TYPE_NAMES));
-    milk_table.appendChild(createNumberControlRow("Fullness", pc, "milkFullness"));
-    milk_table.appendChild(createNumberControlRow("Rate", pc, "milkRate"));
-    milk_table.appendChild(createNumberControlRow("Multiplier", pc, "milkMultiplier"));
-    milk_table.appendChild(createNumberControlRow("Storage Multiplier", pc, "milkStorageMultiplier"));
-    controls.appendChild(milk_table);
-
-    controls.appendChild(createHeader("Genitals"));
-    const genital_table = createTable();
-    genital_table.appendChild(createNumberControlRow("Elasticity", pc, "elasticity"));
-    genital_table.appendChild(createComboControlRow("Genital Spot", pc, "genitalSpot", GLOBAL.GENITAL_SPOT_NAMES));
-    genital_table.appendChild(createBooleanControlRow("Cock Virgin", pc, "cockVirgin"));
-    genital_table.appendChild(createBooleanControlRow("Vagina Virgin", pc, "vaginalVirgin"));
-    //crotchFlags
-    //refractoryRate: 1,
-    /*
-    ballEfficiency: 3,
-    ballFullness: 51.43333333333334,
-    ballSizeMod: 1,
-    ballSizeRaw: 1.5,
-    balls: 2,
-    */
-    genital_table.appendChild(createComboControlRow("Cum Type", pc, "cumType", GLOBAL.FLUID_TYPE_NAMES));
-    genital_table.appendChild(createNumberControlRow2("Cum Multiplier", pc, "cumMultiplierRaw", "cumMultiplierMod"));
-    genital_table.appendChild(createNumberControlRow2("Cum Quality", pc, "cumQualityRaw", "cumQualityMod"));
-    genital_table.appendChild(createComboControlRow("GCum Type", pc, "girlCumType", GLOBAL.FLUID_TYPE_NAMES));
-    genital_table.appendChild(createNumberControlRow2("GCum Multiplier", pc, "girlCumMultiplierRaw", "girlCumMultiplierMod"));
-    controls.appendChild(genital_table);
-
-    controls.appendChild(createHeader("Cock"));
-    const cock_table = createTable();
-    //TODO convert this into it's own data type/creater
-    cock_table.appendChild(createTextRow("Add/Remove (TODO)"));
-    for (var i = 0; i < pc.cocks.length; ++i) {
-      cock_table.appendChild(createHeaderRow(`Cock ${i}`));
-      cock_table.appendChild(createComboControlRow("Type", pc.cocks[i], "cType", GLOBAL.TYPE_NAMES, sorted_type_names));
-      cock_table.appendChild(createTextControlRow("Color", pc.cocks[i], "cockColor"));
-      cock_table.appendChild(createNumberControlRow2("Length", pc.cocks[i], "cLengthRaw", "cLengthMod"));
-      cock_table.appendChild(createNumberControlRow2("Thickness Ratio", pc.cocks[i], "cThicknessRatioRaw", "cThicknessRatioMod"));
-      cock_table.appendChild(createNumberControlRow("Flaccid Multiplier", pc.cocks[i], "flaccidMultiplier"));
-      cock_table.appendChild(createNumberControlRow("Knot Multiplier", pc.cocks[i], "knotMultiplier"));
-      cock_table.appendChild(createFlagRow("Flags", pc.cocks[i], "flags", `c${i}_flag`, GLOBAL.FLAG_NAMES, valid_cock_flags));
-      cock_table.appendChild(createBooleanControlRow("Virgin", pc.cocks[i], "virgin"));
-      // cocksock: null,
-      // piercing: null,
-    }
-    controls.appendChild(cock_table);
-
-    controls.appendChild(createHeader("Vagina"));
-    const vagina_table = createTable();
-    vagina_table.appendChild(createNumberControlRow("Clit Length", pc, "clitLength"));
-    vagina_table.appendChild(createNumberControlRow2("Fertility", pc, "fertilityRaw", "fertilityMod"));
-    //TODO convert this into it's own data type/creater
-    vagina_table.appendChild(createTextRow("Add/Remove (TODO)"));
+    table.appendChild(createTextRow("Add/Remove (TODO)"));
     for (var i = 0; i < pc.vaginas.length; ++i) {
-      vagina_table.appendChild(createHeaderRow(`Vagina ${i}`));
-      vagina_table.appendChild(createComboControlRow("Type", pc.vaginas[i], "type", GLOBAL.TYPE_NAMES, sorted_type_names));
-      vagina_table.appendChild(createTextControlRow("Color", pc.vaginas[i], "vaginaColor"));
-      vagina_table.appendChild(createNumberControlRow("Clits", pc.vaginas[i], "clits"));
-      vagina_table.appendChild(createNumberControlRow("Fullness", pc.vaginas[i], "fullness"));
-      vagina_table.appendChild(createNumberControlRow("Shrinks", pc.vaginas[i], "shrinkCounter"));
-      vagina_table.appendChild(createBooleanControlRow("Hymen", pc.vaginas[i], "hymen"));
-      vagina_table.appendChild(createNumberControlRow("Capacity", pc.vaginas[i], "bonusCapacity"));
-      vagina_table.appendChild(createNumberControlRow2("Looseness", pc.vaginas[i], "loosenessRaw", "loosenessMod"));
-      vagina_table.appendChild(createNumberControlRow("Min Looseness", pc.vaginas[i], "minLooseness"));
-      vagina_table.appendChild(createNumberControlRow2("Wetness", pc.vaginas[i], "wetnessRaw", "wetnessMod"));
-      vagina_table.appendChild(createFlagRow("Flags", pc.vaginas[i], "flags", `v${i}_flag`, GLOBAL.FLAG_NAMES, valid_vagina_flags));
+      table.appendChild(createHeaderRow(`Vagina ${i}`));
+      table.appendChild(createComboControlRow("Type", pc.vaginas[i], "type", GLOBAL.TYPE_NAMES, VALID.TYPES.VAGINA));
+      table.appendChild(createTextControlRow("Color", pc.vaginas[i], "vaginaColor"));
+      table.appendChild(createNumberControlRow("Clits", pc.vaginas[i], "clits"));
+      table.appendChild(createNumberControlRow("Fullness", pc.vaginas[i], "fullness"));
+      table.appendChild(createNumberControlRow("Shrinks", pc.vaginas[i], "shrinkCounter"));
+      table.appendChild(createBooleanControlRow("Hymen", pc.vaginas[i], "hymen"));
+      table.appendChild(createNumberControlRow("Capacity", pc.vaginas[i], "bonusCapacity"));
+      table.appendChild(createNumberControlRow2("Looseness", pc.vaginas[i], "loosenessRaw", "loosenessMod"));
+      table.appendChild(createNumberControlRow("Min Looseness", pc.vaginas[i], "minLooseness"));
+      table.appendChild(createNumberControlRow2("Wetness", pc.vaginas[i], "wetnessRaw", "wetnessMod"));
+      table.appendChild(createFlagRow("Flags", pc.vaginas[i], "flags", `v${i}_flag`, GLOBAL.FLAG_NAMES, VALID.FLAGS.VAGINA));
       // piercing: null,
       // clitPiercing: null,
     }
-    controls.appendChild(vagina_table);
+    return table;
+  }
+
+  function buildUI() {
+    const controls = getById(`${id_prefix}_data`);
+    controls.innerHTML = "";
+    controls.appendChild(createHeader("Cheats"));
+    controls.appendChild(buildCheatTable());
+
+    controls.appendChild(createHeader("Stats"));
+    controls.appendChild(buildStatsTable());
+
+    controls.appendChild(createHeader("Profile"));
+    controls.appendChild(buildProfileTable());
+
+    controls.appendChild(createHeader("Head"));
+    controls.appendChild(buildHeadTable());
+
+    controls.appendChild(createHeader("Face"));
+    controls.appendChild(buildFaceTable());
+
+    controls.appendChild(createHeader("Body"));
+    controls.appendChild(buildBodyTable());
+
+    controls.appendChild(createHeader("Tail"));
+    controls.appendChild(buildTailTable());
+
+    controls.appendChild(createHeader("Breasts"));
+    controls.appendChild(buildBreastsTable());
+
+    controls.appendChild(createHeader("Nipple"));
+    controls.appendChild(buildNippleTable());
+
+    controls.appendChild(createHeader("Milk"));
+    controls.appendChild(buildMilkTable());
+
+    controls.appendChild(createHeader("Genitals"));
+    controls.appendChild(buildGenitalTable());
+
+    controls.appendChild(createHeader("Cock"));
+    controls.appendChild(buildCockTable());
+
+    controls.appendChild(createHeader("Vagina"));
+    controls.appendChild(buildVaginaTable());
 
     controls.appendChild(createHeader("Ass"));
-    const ass_table = createTable();
-    ass_table.appendChild(createNumberControlRow2("Hip Size", pc, "hipRatingRaw", "hipRatingMod"));
-    ass_table.appendChild(createNumberControlRow2("Butt Size", pc, "buttRatingRaw", "buttRatingMod"));
-    ass_table.appendChild(createBooleanControlRow("Anal Virgin", pc, "analVirgin"));
-    ass_table.appendChild(createNumberControlRow("Anal Capacity", pc.ass, "bonusCapacity"));
-    ass_table.appendChild(createNumberControlRow2("Anal Looseness", pc.ass, "loosenessRaw", "loosenessMod"));
-    ass_table.appendChild(createNumberControlRow2("Anal Wetness", pc.ass, "wetnessRaw", "wetnessMod"));
-    ass_table.appendChild(createFlagRow("Flags", pc.ass, "flags", 'ass_flag', GLOBAL.FLAG_NAMES, valid_ass_flags));
-    controls.appendChild(ass_table);
+    controls.appendChild(buildAssTable());
   }
 
   //setup load/save
   load_button.onclick = function () {
     if (typeof pc !== "undefined") {
-      build_ui();
+      buildUI();
       do_load();
     }
   };
@@ -585,7 +761,7 @@
     do_save();
   };
   if (typeof pc !== "undefined") {
-    build_ui();
+    buildUI();
     do_load();
   }
 })();
