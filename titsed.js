@@ -2,7 +2,7 @@
 
 (async function () {
   //setup all basic UI elements
-  const version = "v0.3";
+  const version = "v0.4";
   const id_prefix = "titsed";
   const fg_color = "#000";
   const bg_color = "#f4f4f4";
@@ -192,19 +192,42 @@
   app.innerHTML = `
   <button id="${id_prefix}_show_hide">${right_arrow}</button>
   <h3>TiTsEdJS ${version}</h3>
-  <table><tr>
-    <td><button id="${id_prefix}_load">Load</button></td>
-    <td><button id="${id_prefix}_save">Save</button></td>
-  </tr></table>
-  <div id="${id_prefix}_data"><p>You must load a save before loading.</p></div>`;
+  <div id="${id_prefix}_data"><p>You must load a save.</p></div>`;
   document.body.appendChild(app);
 
   function getById(id) {
     return document.getElementById(id);
   }
 
-  const load_button = getById(`${id_prefix}_load`);
-  const save_button = getById(`${id_prefix}_save`);
+  // VARIABLES GO HERE
+  class DataList {
+    constructor() {
+      this.list = [];
+      this.table = null;
+      this.source = null;
+    }
+    reset(value = 0) {
+      this.list.length = 0;
+      if (this.table != null) {
+        this.table.innerHTML = "";
+      }
+      this.source = value;
+    }
+    update() {
+      for (var i = 0; i < this.list.length; ++i) {
+        if (!this.list[i].focus) {
+          this.list[i].load();
+        }
+      }
+    }
+  }
+
+  const main_data = new DataList();
+  const breast_data = new DataList();
+  const cock_data = new DataList();
+  const vagina_data = new DataList();
+
+  var current_data = main_data;
 
   var editor_shown = true;
   const show_hide_button = getById(`${id_prefix}_show_hide`);
@@ -226,13 +249,20 @@
    * This class is for accessing the data more easily.
    */
   class Data {
-    /**
-     * @param {object} obj
-     * @param {string} id
-     */
     constructor(obj, id, element) {
       this.obj = obj;
       this.id = id;
+
+      this.focus_ = false;
+      if (Array.isArray(element)) {
+        for (var i = 0; i < element.length; ++i) {
+          element[i].onfocus = this.onfocus.bind(this);
+          element[i].onblur = this.onblur.bind(this);
+        }
+      } else {
+        element.onfocus = this.onfocus.bind(this);
+        element.onblur = this.onblur.bind(this);
+      }
       this.element = element;
     }
     get value() {
@@ -250,6 +280,18 @@
     }
     set number(value) {
       this.value = Number(value);
+    }
+    get focus() {
+      return this.focus_;
+    }
+    onfocus() {
+      console.log("gained focus: " + this.id);
+      this.focus_ = true;
+    }
+    onblur() {
+      console.log("lost focus: " + this.id);
+      this.focus_ = false;
+      this.save();
     }
     //default load/save functions
     load() {
@@ -276,7 +318,6 @@
     push(value) {
       this.value[index].push(value);
     }
-
     load() {
       //create map
       const emap = {};
@@ -305,18 +346,7 @@
     }
   }
 
-  const data_list = []; //for all the data values we will have
-  function do_load() {
-    for (var i = 0; i < data_list.length; ++i) {
-      data_list[i].load();
-    }
-  }
-  function do_save() {
-    for (var i = 0; i < data_list.length; ++i) {
-      data_list[i].save();
-    }
-  }
-
+  //HELPER FUNCTIONS
   function createHeader(text) {
     const header = document.createElement("h4");
     header.innerHTML = text;
@@ -351,41 +381,40 @@
     return createTableRow([label], "th");
   }
 
-  function createBooleanControlRow(name, obj, id, is_bool = true) {
+  function createBooleanControlRow(name, obj, id) {
     const label = document.createTextNode(name);
     const e = document.createElement("input");
     e.type = "checkbox";
     const data = new Data(obj, id, e);
-    if (is_bool === "bool") {
-      data.load = function () {
-        this.element.checked = this.value;
-      };
-      data.save = function () {
-        this.value = this.element.checked;
-      };
-    } else {
-      //then it's a number
-      data.load = function () {
-        this.element.checked = !!this.value;
-      };
-      data.save = function () {
-        if (this.element.checked) {
-          this.value = 1;
-        } else {
-          this.value = 0;
-        }
-      };
-    }
 
-    data_list.push(data);
+    //it's a number
+    data.load = function () {
+      this.element.checked = !!this.value;
+    };
+    data.save = function () {
+      if (this.element.checked) {
+        this.value = 1;
+      } else {
+        this.value = 0;
+      }
+    };
+
+    current_data.list.push(data);
     return createTableRow([label, e]);
+  }
+
+  function createButtonRow(name, clickfn) {
+    const button = document.createElement("button");
+    button.innerText = name;
+    button.onclick = clickfn;
+    return createTableRow([button]);
   }
 
   function createNumberControlRow(name, obj, id) {
     const label = document.createTextNode(name);
     const e = document.createElement("input");
     e.type = "number";
-    data_list.push(new Data(obj, id, e));
+    current_data.list.push(new Data(obj, id, e));
     return createTableRow([label, e]);
   }
 
@@ -393,10 +422,10 @@
     const label = document.createTextNode(name);
     const e0 = document.createElement("input");
     e0.type = "number";
-    data_list.push(new Data(obj, id0, e0));
+    current_data.list.push(new Data(obj, id0, e0));
     const e1 = document.createElement("input");
     e1.type = "number";
-    data_list.push(new Data(obj, id1, e1));
+    current_data.list.push(new Data(obj, id1, e1));
     return createTableRow([label, e0, e1]);
   }
 
@@ -411,7 +440,7 @@
     data.save = function () {
       this.value = this.element.value;
     };
-    data_list.push(data);
+    current_data.list.push(data);
     return createTableRow([label, e]);
   }
 
@@ -428,7 +457,7 @@
       const option = new Option(value, key);
       select.appendChild(option);
     }
-    data_list.push(new Data(obj, id, select));
+    current_data.list.push(new Data(obj, id, select));
     return createTableRow([label, select]);
   }
 
@@ -472,16 +501,11 @@
       table.appendChild(createTableRow([buffer[0]], "td", flag_table_cols));
       buffer = [];
     }
-    data_list.push(new FlagData(obj, id, elements));
+    current_data.list.push(new FlagData(obj, id, elements));
     return createTableRow([label, table]);
   }
 
-  function createButtonRow(name, clickfn) {
-    const button = document.createElement("button");
-    button.innerText = name;
-    button.onclick = clickfn;
-    return createTableRow([button]);
-  }
+  // BUILD FUNCTIONS
 
   function buildAssTable() {
     const table = createTable();
@@ -497,6 +521,7 @@
 
   function buildBodyTable() {
     const table = createTable();
+    table.appendChild(createNumberControlRow("Height", pc, "tallness"));
     table.appendChild(createNumberControlRow("Tone", pc, "tone"));
     table.appendChild(createNumberControlRow("Thickness", pc, "thickness"));
     table.appendChild(createNumberControlRow2("Belly", pc, "bellyRatingRaw", "bellyRatingMod"));
@@ -516,12 +541,31 @@
     return table;
   }
 
-  function buildBreastsTable() {
-    const table = createTable();
+  function removeBreastRowFunc(index) {
+    return function () {
+      var output = [];
+      for (var i = 0; i < pc.breastRows.length; ++i) {
+        if (i == index) {
+          continue;
+        }
+        output.push(pc.breastRows[i]);
+      }
+      pc.breastRows = output;
+      repopulateBreastsTable();
+    };
+  }
+
+  function repopulateBreastsTable() {
     //TODO convert this into it's own data type
-    table.appendChild(createTextRow("Add/Remove (TODO)"));
+    const table = breast_data.table;
+    breast_data.reset(pc.breastRows.length);
+    current_data = breast_data;
+
     for (var i = 0; i < pc.breastRows.length; ++i) {
       table.appendChild(createHeaderRow(`Breast Row ${i}`));
+      if (pc.breastRows.length > 1) {
+        table.appendChild(createButtonRow("Remove", removeBreastRowFunc(i)));
+      }
       table.appendChild(createNumberControlRow("Count", pc.breastRows[i], "breasts"));
       table.appendChild(createNumberControlRow2("Rating", pc.breastRows[i], "breastRatingRaw", "breastRatingMod"));
       table.appendChild(createNumberControlRow("Lactation", pc.breastRows[i], "breastRatingLactationMod"));
@@ -530,7 +574,19 @@
       table.appendChild(createComboControlRow("Nipple", pc.breastRows[i], "nippleType", GLOBAL.NIPPLE_TYPE_NAMES));
       table.appendChild(createFlagRow("Areola Flags", pc.breastRows[i], "areolaFlags", `br${i}_areola_flag`, GLOBAL.FLAG_NAMES, VALID.FLAGS.AREOLA));
     }
-    return table;
+    table.appendChild(
+      createButtonRow("Add", function () {
+        pc.createBreastRow();
+        repopulateBreastsTable();
+      })
+    );
+    current_data = main_data;
+  }
+
+  function buildBreastsTable() {
+    breast_data.table = createTable();
+    repopulateBreastsTable();
+    return breast_data.table;
   }
 
   function buildCheatTable() {
@@ -539,19 +595,32 @@
       flags["CHEATS_ENABLED"] = 0;
     }
     table.appendChild(createBooleanControlRow("Enabled", flags, "CHEATS_ENABLED"));
-    // if (!('CHEATS_USED' in flags)) {
-    //   flags['CHEATS_USED'] = 0;
-    // }
-    // table.appendChild(createNumberControlRow('Used', flags, 'CHEATS_USED'));
     return table;
   }
 
-  function buildCockTable() {
-    const table = createTable();
+  function removeCockFunc(index) {
+    return function () {
+      var output = [];
+      for (var i = 0; i < pc.cocks.length; ++i) {
+        if (i == index) {
+          continue;
+        }
+        output.push(pc.cocks[i]);
+      }
+      pc.cocks = output;
+      repopulateCockTable();
+    };
+  }
+
+  function repopulateCockTable() {
     //TODO convert this into it's own data type
-    table.appendChild(createTextRow("Add/Remove (TODO)"));
+    const table = cock_data.table;
+    cock_data.reset(pc.cocks.length);
+    current_data = cock_data;
+
     for (var i = 0; i < pc.cocks.length; ++i) {
       table.appendChild(createHeaderRow(`Cock ${i}`));
+      table.appendChild(createButtonRow("Remove", removeCockFunc(i)));
       table.appendChild(createComboControlRow("Type", pc.cocks[i], "cType", GLOBAL.TYPE_NAMES, VALID.TYPES.COCK));
       table.appendChild(createTextControlRow("Color", pc.cocks[i], "cockColor"));
       table.appendChild(createNumberControlRow2("Length", pc.cocks[i], "cLengthRaw", "cLengthMod"));
@@ -563,7 +632,19 @@
       // cocksock: null,
       // piercing: null,
     }
-    return table;
+    table.appendChild(
+      createButtonRow("Add", function () {
+        pc.createCock();
+        repopulateCockTable();
+      })
+    );
+    current_data = main_data;
+  }
+
+  function buildCockTable() {
+    cock_data.table = createTable();
+    repopulateCockTable();
+    return cock_data.table;
   }
 
   function buildFaceTable() {
@@ -643,7 +724,6 @@
   function buildProfileTable() {
     const table = createTable();
     table.appendChild(createNumberControlRow("Credits", pc, "credits"));
-    table.appendChild(createNumberControlRow("Height", pc, "tallness"));
     table.appendChild(createNumberControlRow("Personality", pc, "personality"));
     table.appendChild(createNumberControlRow("Exhibitionism", pc, "exhibitionismRaw"));
     return table;
@@ -679,14 +759,31 @@
     return table;
   }
 
-  function buildVaginaTable() {
-    const table = createTable();
+  function removeVaginaFunc(index) {
+    return function () {
+      var output = [];
+      for (var i = 0; i < pc.vaginas.length; ++i) {
+        if (i == index) {
+          continue;
+        }
+        output.push(pc.vaginas[i]);
+      }
+      pc.vaginas = output;
+      repopulateVaginaTable();
+    };
+  }
+
+  function repopulateVaginaTable() {
+    const table = vagina_data.table;
+    vagina_data.reset(pc.vaginas.length);
+    current_data = vagina_data;
+
     table.appendChild(createNumberControlRow("Clit Length", pc, "clitLength"));
     table.appendChild(createNumberControlRow2("Fertility", pc, "fertilityRaw", "fertilityMod"));
     //TODO convert this into it's own data type/creater
-    table.appendChild(createTextRow("Add/Remove (TODO)"));
     for (var i = 0; i < pc.vaginas.length; ++i) {
       table.appendChild(createHeaderRow(`Vagina ${i}`));
+      table.appendChild(createButtonRow("Remove", removeVaginaFunc(i)));
       table.appendChild(createComboControlRow("Type", pc.vaginas[i], "type", GLOBAL.TYPE_NAMES, VALID.TYPES.VAGINA));
       table.appendChild(createTextControlRow("Color", pc.vaginas[i], "vaginaColor"));
       table.appendChild(createNumberControlRow("Clits", pc.vaginas[i], "clits"));
@@ -701,11 +798,28 @@
       // piercing: null,
       // clitPiercing: null,
     }
-    return table;
+    table.appendChild(
+      createButtonRow("Add", function () {
+        pc.createVagina();
+        repopulateVaginaTable();
+      })
+    );
+    current_data = main_data;
+  }
+
+  function buildVaginaTable() {
+    vagina_data.table = createTable();
+    repopulateVaginaTable();
+    return vagina_data.table;
   }
 
   function buildUI() {
     const controls = getById(`${id_prefix}_data`);
+
+    main_data.reset(pc);
+
+    current_data = main_data;
+
     controls.innerHTML = "";
     controls.appendChild(createHeader("Cheats"));
     controls.appendChild(buildCheatTable());
@@ -750,18 +864,31 @@
     controls.appendChild(buildAssTable());
   }
 
-  //setup load/save
-  load_button.onclick = function () {
-    if (typeof pc !== "undefined") {
-      buildUI();
-      do_load();
+  setInterval(function () {
+    //setup initial load/reload
+    if (main_data.source === null || main_data.source !== pc) {
+      if (typeof pc !== "undefined") {
+        buildUI();
+      }
+      return;
     }
-  };
-  save_button.onclick = function () {
-    do_save();
-  };
-  if (typeof pc !== "undefined") {
-    buildUI();
-    do_load();
-  }
+
+    //update our fancy tables
+    if (pc.breastRows.length !== breast_data.source) {
+      repopulateBreastsTable();
+    } else {
+      breast_data.update();
+    }
+    if (pc.cocks.length !== cock_data.source) {
+      repopulateCockTable();
+    } else {
+      cock_data.update();
+    }
+    if (pc.vaginas.length !== vagina_data.source) {
+      repopulateVaginaTable();
+    } else {
+      vagina_data.update();
+    }
+    main_data.update();
+  }, 1000); //1 second timer
 })();
