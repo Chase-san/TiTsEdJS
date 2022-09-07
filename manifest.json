@@ -12,5 +12,10 @@
       "matches": ["*://*.fenoxo.com/play/TiTS/*"],
       "js": ["titsed.js"]
     }
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "update_url": "https://chase-san.github.io/TiTsEdJS/updates.json"
+    }
+  }
 }
