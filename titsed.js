@@ -215,7 +215,7 @@
     editor_app.id = id_prefix;
     editor_app.innerHTML = `
     <button id="${id_prefix}_show_hide">${right_arrow}</button>
-    <h3>TiTsEdJS ${version}</h3>
+    <h3><a href="https://github.com/Chase-san/TiTsEdJS">TiTsEdJS ${version}</a></h3>
     <div id="${id_prefix}_data"><p>You must load a save.</p></div>`;
     document.body.appendChild(editor_app);
 
