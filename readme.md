@@ -44,7 +44,9 @@ arising from the use of this software.
 See the License for more details.
 
 # Changelog
-
+- v0.5 - 2022-09-06
+  - Added additional tail options
+  - Added firefox extension (pending)
 - v0.4 - 2022-09-05
   - Removed Save/Load function, now performs edits live
   - Add breast/cock/vagina add/remove functions (required the above).
