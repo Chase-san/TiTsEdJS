@@ -44,6 +44,12 @@ arising from the use of this software.
 See the License for more details.
 
 # Changelog
+- v0.6 - 2022-09-08
+  - Fixed dynamic Add/Remove buttons
+  - Fixed Button Highlight
+  - Added Section Hide buttons
+  - Fixed Extension Flag setting
+  - Fixed Missing Flags
 - v0.5 - 2022-09-06
   - Added additional tail options
   - Added firefox extension (pending)

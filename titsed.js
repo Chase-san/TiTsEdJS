@@ -18,12 +18,6 @@
       }
       reset(value = 0) {
         this.list.length = 0;
-        if (this.table != null) {
-          //clear the table of children
-          while (this.table.firstChild) {
-            this.table.removeChild(table.firstChild);
-          }
-        }
         this.source = value;
       }
       update() {
@@ -34,7 +28,6 @@
         }
       }
     }
-
     //points to game data and streamlines access to it
     class Data {
       constructor(obj, id, element) {
@@ -121,25 +114,26 @@
         }
       }
       save() {
-        const result = [];
+        this.value.length = 0;
         for (var i = 0; i < this.element.length; ++i) {
           const e = this.element[i];
           if (e.checked) {
-            result.push(Number(e.value));
+            this.value.push(Number(e.value));
           }
         }
-        this.value = result;
       }
     }
 
     /////////////////////////////////////////////////////////
     //VARIABLES
-    const version = "v0.5";
+    const version = "v0.6";
     const id_prefix = "titsed";
     const text_color = "#000"; //var(--textColor)
     const bg_color = "#EEE"; //var(--foregroundColorA)
     const border_color = "#000"; //var(--foregroundColorB)
     const input_color = "#FFF"; //var(--shadowColor)
+    const hover_color = "#EEE"; //var(--shadowColor)
+    const active_color = "#AAA"; //var(--shadowColor)
     const right_arrow = "&#9654;"; //used for show/hide button
     const left_arrow = "&#9664;"; //used for show/hide button
     const editor_width_px = 440;
@@ -252,17 +246,17 @@
       return {
         FLAGS: {
           ASS: valid_ass_flags,
-          AREOLA: unique(valid_areola_flags, game_app.GLOBAL.VALID_AREOLA_FLAGS),
-          ARM: unique(valid_arm_flags, game_app.GLOBAL.VALID_ARM_FLAGS),
-          COCK: unique(valid_cock_flags, game_app.GLOBAL.VALID_COCK_FLAGS),
+          AREOLA: unique(valid_areola_flags.concat(game_app.GLOBAL.VALID_AREOLA_FLAGS)),
+          ARM: unique(valid_arm_flags.concat(game_app.GLOBAL.VALID_ARM_FLAGS)),
+          COCK: unique(valid_cock_flags.concat(game_app.GLOBAL.VALID_COCK_FLAGS)),
           CROTCH: valid_crotch_flags,
           EAR: valid_ear_flags,
-          FACE: unique(valid_face_flags, game_app.GLOBAL.VALID_FACE_FLAGS),
-          LEG: unique(valid_leg_flags, game_app.GLOBAL.VALID_LEG_FLAGS),
-          SKIN: unique(valid_skin_flags, game_app.GLOBAL.VALID_SKIN_FLAGS),
-          TAIL: unique(valid_tail_flags, game_app.GLOBAL.VALID_TAIL_FLAGS),
-          TONGUE: unique(valid_tongue_flags, game_app.GLOBAL.VALID_TONGUE_FLAGS),
-          VAGINA: unique(valid_vagina_flags, game_app.GLOBAL.VALID_VAGINA_FLAGS),
+          FACE: unique(valid_face_flags.concat(game_app.GLOBAL.VALID_FACE_FLAGS)),
+          LEG: unique(valid_leg_flags.concat(game_app.GLOBAL.VALID_LEG_FLAGS)),
+          SKIN: unique(valid_skin_flags.concat(game_app.GLOBAL.VALID_SKIN_FLAGS)),
+          TAIL: unique(valid_tail_flags.concat(game_app.GLOBAL.VALID_TAIL_FLAGS)),
+          TONGUE: unique(valid_tongue_flags.concat(game_app.GLOBAL.VALID_TONGUE_FLAGS)),
+          VAGINA: unique(valid_vagina_flags.concat(game_app.GLOBAL.VALID_VAGINA_FLAGS)),
         },
         TYPES: {
           ANTENNA: matchRefOrder(unique(valid_antenna_types.concat(game_app.GLOBAL.VALID_ANTENNAE_TYPES)), sorted_type_names),
@@ -289,9 +283,29 @@
       return document.getElementById(id);
     }
 
-    function createHeader(text) {
+    function createHeader(text, hideElement = null) {
       const header = document.createElement("h4");
       header.textContent = text;
+
+      if (hideElement) {
+        const button = document.createElement("button");
+        button.textContent = "Hide";
+        let hideFn;
+        let showFn;
+        hideFn = function () {
+          button.textContent = "Show";
+          button.onclick = showFn;
+          hideElement.className = "hidden";
+        };
+        showFn = function () {
+          button.textContent = "Hide";
+          button.onclick = hideFn;
+          hideElement.className = "";
+        };
+        button.onclick = hideFn;
+        header.appendChild(button);
+      }
+
       return header;
     }
 
@@ -489,14 +503,8 @@
 
     function removeBreastRowFunc(index) {
       return function () {
-        var output = [];
-        for (var i = 0; i < game_app.pc.breastRows.length; ++i) {
-          if (i == index) {
-            continue;
-          }
-          output.push(game_app.pc.breastRows[i]);
-        }
-        game_app.pc.breastRows = output;
+        console.log("Removing breast row #" + index);
+        game_app.pc.removeBreastRow(index);
         repopulateBreastsTable();
       };
     }
@@ -506,6 +514,9 @@
       const table = breast_data.table;
       breast_data.reset(game_app.pc.breastRows.length);
       current_data = breast_data;
+      while (table.firstChild) {
+        table.removeChild(table.firstChild);
+      }
 
       for (var i = 0; i < game_app.pc.breastRows.length; ++i) {
         table.appendChild(createHeaderRow(`Breast Row ${i}`));
@@ -548,14 +559,8 @@
 
     function removeCockFunc(index) {
       return function () {
-        var output = [];
-        for (var i = 0; i < game_app.pc.cocks.length; ++i) {
-          if (i == index) {
-            continue;
-          }
-          output.push(game_app.pc.cocks[i]);
-        }
-        game_app.pc.cocks = output;
+        console.log("Removing cock #" + index);
+        game_app.pc.removeCock(index);
         repopulateCockTable();
       };
     }
@@ -578,6 +583,9 @@
       const table = cock_data.table;
       cock_data.reset(game_app.pc.cocks.length);
       current_data = cock_data;
+      while (table.firstChild) {
+        table.removeChild(table.firstChild);
+      }
 
       for (var i = 0; i < game_app.pc.cocks.length; ++i) {
         table.appendChild(createHeaderRow(`Cock ${i}`));
@@ -717,14 +725,8 @@
 
     function removeVaginaFunc(index) {
       return function () {
-        var output = [];
-        for (var i = 0; i < game_app.pc.vaginas.length; ++i) {
-          if (i == index) {
-            continue;
-          }
-          output.push(game_app.pc.vaginas[i]);
-        }
-        game_app.pc.vaginas = output;
+        console.log("Removing vagina #" + index);
+        game_app.pc.removeVagina(index);
         repopulateVaginaTable();
       };
     }
@@ -749,6 +751,9 @@
       const table = vagina_data.table;
       vagina_data.reset(game_app.pc.vaginas.length);
       current_data = vagina_data;
+      while (table.firstChild) {
+        table.removeChild(table.firstChild);
+      }
 
       table.appendChild(createNumberControlRow("Clit Length", game_app.pc, "clitLength"));
       table.appendChild(createNumberControlRow2("Fertility", game_app.pc, "fertilityRaw", "fertilityMod"));
@@ -789,6 +794,9 @@
         box-sizing: border-box;
         right: 0px;
       }
+      #${id_prefix} .hidden {
+        display: none;
+      }
       #${id_prefix} > #${id_prefix}_data {
         overflow-y: scroll;
         overflow-x: hidden;
@@ -799,6 +807,21 @@
       #${id_prefix} > h3 {
         margin: 1ex;
         text-align: center;
+      }
+      #${id_prefix} button {
+        color: ${text_color};
+        background-color: ${input_color};
+        border: 1px solid ${border_color};
+      }
+      #${id_prefix} button:hover {
+        background-color: ${hover_color};
+      }
+      #${id_prefix} button:active {
+        background-color: ${active_color};
+      }
+      #${id_prefix} > div > h4 > button {
+        float: right;
+        margin-right: 1em;
       }
       #${id_prefix} table {
         width: calc(100% - 2ex);
@@ -888,63 +911,90 @@
       current_data = main_data;
 
       //remove all child nodes
-      while(controls.firstChild) {
+      while (controls.firstChild) {
         controls.removeChild(controls.firstChild);
       }
       controls.appendChild(createHeader("Cheats"));
       controls.appendChild(buildCheatTable());
 
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Stats"));
-      controls.appendChild(buildStatsTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Profile"));
-      controls.appendChild(buildProfileTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Head"));
-      controls.appendChild(buildHeadTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Face"));
-      controls.appendChild(buildFaceTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Body"));
-      controls.appendChild(buildBodyTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Tail"));
-      controls.appendChild(buildTailTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Breasts"));
-      controls.appendChild(buildBreastsTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Nipple"));
-      controls.appendChild(buildNippleTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Milk"));
-      controls.appendChild(buildMilkTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Genitals"));
-      controls.appendChild(buildGenitalTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Cock"));
-      controls.appendChild(buildCockTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Vagina"));
-      controls.appendChild(buildVaginaTable());
-
-      controls.appendChild(createSeperator());
-      controls.appendChild(createHeader("Ass"));
-      controls.appendChild(buildAssTable());
+      {
+        controls.appendChild(createSeperator());
+        const table = buildStatsTable();
+        controls.appendChild(createHeader("Stats", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildProfileTable();
+        controls.appendChild(createHeader("Profile", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildHeadTable();
+        controls.appendChild(createHeader("Head", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildFaceTable();
+        controls.appendChild(createHeader("Face", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildBodyTable();
+        controls.appendChild(createHeader("Body", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildTailTable();
+        controls.appendChild(createHeader("Tail", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildBreastsTable();
+        controls.appendChild(createHeader("Breasts", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildNippleTable();
+        controls.appendChild(createHeader("Nipple", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildMilkTable();
+        controls.appendChild(createHeader("Milk", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildGenitalTable();
+        controls.appendChild(createHeader("Genitals"), table);
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildCockTable();
+        controls.appendChild(createHeader("Cock", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildVaginaTable();
+        controls.appendChild(createHeader("Vagina", table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildAssTable();
+        controls.appendChild(createHeader("Ass", table));
+        controls.appendChild(table);
+      }
     }
 
     //This is our 'main' function
@@ -997,6 +1047,12 @@
     if (game_app === null) {
       return;
     }
+    if (game_app.titsed) {
+      console.log("TiTsEd is already loaded, please reload the page.");
+      clearInterval(titsed_loader_id);
+      return;
+    }
+    game_app["titsed"] = true;
     titsed();
     console.log("TiTsEd Ready");
     clearInterval(titsed_loader_id);
