@@ -1,3 +1,17 @@
 {
-  "addons": {}
+  "addons": {
+    "{10974773-9982-4a9f-8e5e-3d62984c7ada}": {
+      "updates": [
+        {
+          "version": "0.5",
+          "update_link": "https://github.com/Chase-san/TiTsEdJS/releases/download/v0.5/TiTsEdJs-0.5-extension.xpi"
+        },
+        {
+          "version": "0.6",
+          "update_link": "https://github.com/Chase-san/TiTsEdJS/releases/download/v0.6/TiTsEdJs-0_6-extension.xpi"
+        }
+      ]
+    }
+
+  }
 }
