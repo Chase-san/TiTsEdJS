@@ -36,6 +36,14 @@ After that it's fairly straight forward, and if you don't understand it, it's
 really not my problem. Why is that you ask? That is due to the fancy disclaimer
 that follows.
 
+### Usage on Download Version?
+So while you can run this entirely offline, it is not very straight forward. You can however use this with the download version while online.
+The player that the download version uses has a DevTools console. You just need to press Ctrl + Shift + I then paste the following under where it says console.
+
+`javascript:(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
+
+A new sidebar should pop up that you can minimise/maximise using the small white arrow and now you can close the DevTools using the X in the top right.
+
 ## Disclaimer
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
