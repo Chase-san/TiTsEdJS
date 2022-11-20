@@ -32,17 +32,24 @@ On chrome, if you type in `javascript:` and then paste the previous after it in
 the address bar to get the same result. Browsers automatically remove
 `javascript:` when pasted, SO YOU MUST TYPE IT MANUALLY!
 
-After that it's fairly straight forward, and if you don't understand it, it's
-really not my problem. Why is that you ask? That is due to the fancy disclaimer
-that follows.
-
 ### Usage on Download Version?
-So while you can run this entirely offline, it is not very straight forward. You can however use this with the download version while online.
-The player that the download version uses has a DevTools console. You just need to press Ctrl + Shift + I then paste the following under where it says console.
+So while you can run this entirely offline, it is not very straight forward. You
+can however use this with the download version while online.
+
+The player that the download version uses has a DevTools console. You just need
+to press Ctrl + Shift + I then paste the following under where it says console.
 
 `javascript:(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
 
-A new sidebar should pop up that you can minimise/maximise using the small white arrow and now you can close the DevTools using the X in the top right.
+A new sidebar should pop up that you can minimise/maximise using the small white
+arrow and now you can close the DevTools using the X in the top right.
+
+### Usage of the Editor itself.
+
+After you have it running it's fairly straight forward. All you do is click a box,
+enter a new value and click back to the game. If you don't understand it, it's
+really not my problem. Why is that you ask? That is due to the fancy disclaimer
+that follows.
 
 ## Disclaimer
 This software is provided 'as-is', without any express or implied
