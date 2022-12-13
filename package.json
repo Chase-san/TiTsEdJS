@@ -1,0 +1,19 @@
+{
+  "name": "titsedjs",
+  "version": "0.6.0",
+  "description": "This is an in-game editor / cheat system for the Adult Game: Trials in Tainted Space by Fenoxo.",
+  "main": "titsed.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chase-san/TiTsEdJS.git"
+  },
+  "author": "csdgn",
+  "license": "ZLIB",
+  "bugs": {
+    "url": "https://github.com/Chase-san/TiTsEdJS/issues"
+  },
+  "homepage": "https://github.com/Chase-san/TiTsEdJS#readme"
+}
