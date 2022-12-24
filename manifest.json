@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "TiTsEdJS",
-  "version": "0.7",
+  "version": "0.7.2",
   "description": "This is an in-game editor / cheat system for the Adult Game: Trials in Tainted Space by Fenoxo.",
   "homepage_url": "https://github.com/Chase-san/TiTsEdJS",
   "icons": {

@@ -1,6 +1,6 @@
 {
   "name": "titsedjs",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "description": "This is an in-game editor / cheat system for the Adult Game: Trials in Tainted Space by Fenoxo.",
   "main": "titsed.js",
   "scripts": {

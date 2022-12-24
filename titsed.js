@@ -122,7 +122,7 @@
 
     /////////////////////////////////////////////////////////
     // VARIABLES
-    const version = 'v0.7';
+    const version = 'v0.7.2';
     const id_prefix = 'titsed';
     const text_color = '#000';      // var(--textColor)
     const bg_color = '#EEE';        // var(--foregroundColorA)
@@ -280,10 +280,9 @@
       return document.getElementById(id);
     }
 
-    function createHeader(text, hideElement = null) {
+    function createHeader(text, hideElement = null, hideByDefault = false) {
       const header = document.createElement('h4');
       header.textContent = text;
-
       if (hideElement) {
         const button = document.createElement('button');
         button.textContent = 'Hide';
@@ -301,6 +300,9 @@
         };
         button.onclick = hideFn;
         header.appendChild(button);
+        if(hideByDefault) {
+          hideFn();
+        }
       }
 
       return header;
@@ -545,9 +547,12 @@
       }
       table.appendChild(createBooleanControlRow('Enabled', game_app.flags, 'CHEATS_ENABLED'));
       table.appendChild(createButtonRow('Show Cheat Menu', function() {
-        game_app.ui.state.optionMode = 5;  // this might break later
+        const oldOptionMode = game_app.ui.state.optionMode;
+        game_app.ui.showMainMenu();
+        game_app.ui.state.optionMode = 5; //index of the cheat menu
         game_app.ui.showOptions();
         toggleEditor();
+        game_app.ui.state.optionMode = oldOptionMode;
       }));
       return table;
     }
@@ -700,10 +705,10 @@
 
     function buildStatsTable() {
       const table = createTable();
-      table.appendChild(createNumberControlRow('Shields', game_app.pc, 'shieldsRaw'));
-      table.appendChild(createNumberControlRow('Health', game_app.pc, 'HPRaw'));
-      table.appendChild(createNumberControlRow('Lust', game_app.pc, 'lustRaw'));
-      table.appendChild(createNumberControlRow('Energy', game_app.pc, 'energyRaw'));
+      table.appendChild(createNumberControlRow('Current Shields', game_app.pc, 'shieldsRaw'));
+      table.appendChild(createNumberControlRow('Current Health', game_app.pc, 'HPRaw'));
+      table.appendChild(createNumberControlRow('Current Lust', game_app.pc, 'lustRaw'));
+      table.appendChild(createNumberControlRow('Current Energy', game_app.pc, 'energyRaw'));
       table.appendChild(createNumberControlRow2('Physique', game_app.pc, 'physiqueRaw', 'physiqueMod'));
       table.appendChild(createNumberControlRow2('Reflexes', game_app.pc, 'reflexesRaw', 'reflexesMod'));
       table.appendChild(createNumberControlRow2('Aim', game_app.pc, 'aimRaw', 'aimMod'));
@@ -711,8 +716,6 @@
       table.appendChild(createNumberControlRow2('Willpower', game_app.pc, 'willpowerRaw', 'willpowerMod'));
       table.appendChild(createNumberControlRow2('Libido', game_app.pc, 'libidoRaw', 'libidoMod'));
       table.appendChild(createNumberControlRow2('Taint', game_app.pc, 'taintRaw', 'taintMod'));
-      table.appendChild(createNumberControlRow('Tease Lvl', game_app.pc, 'teaseLevel'));
-      table.appendChild(createNumberControlRow('Tease Exp', game_app.pc, 'teaseXP'));
       return table;
     }
 
@@ -725,10 +728,20 @@
       // tailVenom
       // tailRecharge
       table.appendChild(createFlagRow('Flags', game_app.pc, 'tailFlags', `tail_flag`, game_app.GLOBAL.FLAG_NAMES, VALID.FLAGS.TAIL));
-      table.appendChild(createHeaderRow('Cock'));
-      buildCockEntry(table, game_app.pc.tailCock, 'tail_');
-      table.appendChild(createHeaderRow('Vagina'));
-      buildVaginaEntry(table, game_app.pc.tailCunt, 'tail_');
+      
+      // Use subtables for these.
+      {
+        const subtable = createTable();
+        buildCockEntry(subtable, game_app.pc.tailCock, 'tail_');
+        table.appendChild(createTableRow([createHeader('Tail Cock', subtable, true)]));
+        table.appendChild(createTableRow([subtable]));
+      }
+      {
+        const subtable = createTable();
+        buildVaginaEntry(subtable, game_app.pc.tailCunt, 'tail_')
+        table.appendChild(createTableRow([createHeader('Tail Vagina', subtable, true)]));
+        table.appendChild(createTableRow([subtable]));
+      }
 
       return table;
     }
@@ -847,6 +860,10 @@
         color: ${text_color};
         background-color: ${input_color};
         border: 1px solid ${border_color};
+      }
+      #${id_prefix} tr > td > h4 > button {
+        width: 70%;
+        float: right;
       }
       #${id_prefix} input[type=number] {
         appearance: textfield;

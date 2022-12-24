@@ -252,10 +252,78 @@ var pc = {
   nipplesPerBreast: 1,   // DONE
   originalRace: 'human',
   perkPoints: 0,
-  perks: [__TODO__],
+  perks: [ //pc.removePerk("Ice Cold");
+    {
+      combatOnly: false,
+      hidden: true,
+      iconName: '',
+      iconShade: 'var(--textColor)',
+      minutesLeft: 0,
+      neverSerialize: false,
+      storageName: 'Ice Cold',
+      tooltip: 'Slows lust gain over time and improves low libido teasing.',
+      value1: 0,
+      value2: 0,
+      value3: 0,
+      value4: 0,
+      version: 1
+    },
+    {
+      combatOnly: false,
+      hidden: true,
+      iconName: '',
+      iconShade: 'var(--textColor)',
+      minutesLeft: 0,
+      neverSerialize: false,
+      storageName: 'STD Immune',
+      tooltip: 'You are immune to sexually transmitted diseases.',
+      value1: 0,
+      value2: 0,
+      value3: 0,
+      value4: 0,
+      version: 1
+    }
+  ],
   personality: 50,  // DONE
   physiqueMod: 0,   // DONE
-  pregnancyData: [__TODO__],
+  pregnancyData: [
+    {
+      pregnancyBellyRatingContribution: 0,
+      pregnancyIncubation: 0,
+      pregnancyIncubationMulti: 1,
+      pregnancyQuantity: 0,
+      pregnancyType: '',
+      neverSerialize: false,
+      version: 1
+    },
+    {
+      pregnancyBellyRatingContribution: 0,
+      pregnancyIncubation: 0,
+      pregnancyIncubationMulti: 1,
+      pregnancyQuantity: 0,
+      pregnancyType: '',
+      neverSerialize: false,
+      version: 1
+    },
+    {
+      pregnancyBellyRatingContribution: 0,
+      pregnancyIncubation: 0,
+      pregnancyIncubationMulti: 1,
+      pregnancyQuantity: 0,
+      pregnancyType: '',
+      neverSerialize: false,
+      version: 1
+    },
+    {
+      pregnancyBellyRatingContribution: 0,
+      pregnancyIncubation: 0,
+      pregnancyIncubationMulti: 1,
+      pregnancyQuantity: 0,
+      pregnancyType: '',
+      neverSerialize: false,
+      version: 1
+    }
+  ],
   pregnancyIncubationBonusFatherMod: 0,  // DONE
   pregnancyIncubationBonusFatherRaw: 1,  // DONE
   pregnancyIncubationBonusMotherMod: 0,  // DONE
