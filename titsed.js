@@ -31,6 +31,7 @@
     // points to game data and streamlines access to it
     class Data {
       constructor(obj, id, element) {
+        this.missing = false;
         this.obj = obj;
         this.id = id;
 
@@ -50,10 +51,17 @@
         if (this.id in this.obj) {
           return this.obj[this.id];
         }
-        alert(`${this.id} attribute not found.`);
+        if (!this.missing) {
+          // alert(`${this.id} attribute not found.`);
+          this.missing = true;
+          this.element.setAttribute('disabled', '');
+        }
         return null;
       }
       set value(value) {
+        if (this.missing) {
+          return;
+        }
         this.obj[this.id] = value;
       }
       get number() {
@@ -122,14 +130,18 @@
 
     /////////////////////////////////////////////////////////
     // VARIABLES
-    const version = 'v0.7.2';
+    const version = 'v0.8.0';
     const id_prefix = 'titsed';
-    const text_color = '#000';      // var(--textColor)
-    const bg_color = '#EEE';        // var(--foregroundColorA)
-    const border_color = '#000';    // var(--foregroundColorB)
-    const input_color = '#FFF';     // var(--shadowColor)
-    const hover_color = '#EEE';     // var(--shadowColor)
-    const active_color = '#AAA';    // var(--shadowColor)
+    const title_color = '#FFF';
+    const bg_app_color = '#666';
+    const fg_active_color = '#000';
+    const fg_inactive_color = '#333';
+    const bg_active_color = '#EEE';
+    const bg_inactive_color = '#AAA';
+    const border_color = '#000';
+    const input_color = '#FFF';
+    const hover_color = '#EEE';
+    const active_color = '#AAA';
     const right_arrow = '&#9654;';  // used for show/hide button
     const left_arrow = '&#9664;';   // used for show/hide button
     const editor_width_px = 440;
@@ -141,6 +153,9 @@
 
     var current_data = main_data;
     var editor_shown = true;
+
+    var ui_profile = null;
+    var ui_body = null;
 
     // creates a map of lists of valid values for the dropdowns and flags
     const VALID = (function() {
@@ -300,7 +315,7 @@
         };
         button.onclick = hideFn;
         header.appendChild(button);
-        if(hideByDefault) {
+        if (hideByDefault) {
           hideFn();
         }
       }
@@ -549,7 +564,7 @@
       table.appendChild(createButtonRow('Show Cheat Menu', function() {
         const oldOptionMode = game_app.ui.state.optionMode;
         game_app.ui.showMainMenu();
-        game_app.ui.state.optionMode = 5; //index of the cheat menu
+        game_app.ui.state.optionMode = 5;  // index of the cheat menu
         game_app.ui.showOptions();
         toggleEditor();
         game_app.ui.state.optionMode = oldOptionMode;
@@ -687,7 +702,6 @@
     function buildPregnancyTable() {
       const table = createTable();
       table.appendChild(createNumberControlRow2('Multiplier', game_app.pc, 'pregnancyMultiplierRaw', 'pregnancyMultiplierMod'));
-      table.appendChild(createNumberControlRow2('Multiplier', game_app.pc, 'pregnancyMultiplierRaw', 'pregnancyMultiplierMod'));
       table.appendChild(createHeaderRow('Incubation Bonus'));
       table.appendChild(createNumberControlRow2('Father', game_app.pc, 'pregnancyIncubationBonusFatherRaw', 'pregnancyIncubationBonusFatherMod'));
       table.appendChild(createNumberControlRow2('Mother', game_app.pc, 'pregnancyIncubationBonusMotherRaw', 'pregnancyIncubationBonusMotherMod'));
@@ -723,12 +737,14 @@
       const table = createTable();
       table.appendChild(createNumberControlRow('Count', game_app.pc, 'tailCount'));
       table.appendChild(createComboControlRow('Type', game_app.pc, 'tailType', game_app.GLOBAL.TYPE_NAMES, VALID.TYPES.TAIL));
+
+      // unused as of around TiTs 0.9
       table.appendChild(createComboControlRow('Cum Type', game_app.pc, 'tailCumType', game_app.GLOBAL.FLUID_TYPE_NAMES));
       table.appendChild(createComboControlRow('GCum Type', game_app.pc, 'tailGirlCumType', game_app.GLOBAL.FLUID_TYPE_NAMES));
       // tailVenom
       // tailRecharge
       table.appendChild(createFlagRow('Flags', game_app.pc, 'tailFlags', `tail_flag`, game_app.GLOBAL.FLAG_NAMES, VALID.FLAGS.TAIL));
-      
+
       // Use subtables for these.
       {
         const subtable = createTable();
@@ -806,13 +822,16 @@
       #${id_prefix} {
         width: ${editor_width_px}px;
         height: 100%;
-        background: ${bg_color};
-        color: ${text_color};
+        background: ${bg_app_color};
         border: 1px solid ${border_color};
-        padding: 1ex;
+        padding: 0.5ex;
         position: fixed;
         box-sizing: border-box;
         right: 0px;
+        top: 0px;
+      }
+      #${id_prefix} h3 > a {
+        color: ${title_color};
       }
       #${id_prefix} .hidden {
         display: none;
@@ -820,7 +839,10 @@
       #${id_prefix} > #${id_prefix}_data {
         overflow-y: scroll;
         overflow-x: hidden;
-        height: calc(100% - 80px);
+        height: calc(100% - 65px);
+        padding: 0.5ex;
+        color: ${fg_active_color};
+        background: ${bg_active_color};
         scrollbar-width: auto;
         scrollbar-color: auto;
       }
@@ -829,7 +851,7 @@
         text-align: center;
       }
       #${id_prefix} button {
-        color: ${text_color};
+        color: ${fg_active_color};
         background-color: ${input_color};
         border: 1px solid ${border_color};
       }
@@ -839,10 +861,7 @@
       #${id_prefix} button:active {
         background-color: ${active_color};
       }
-      #${id_prefix} > div > h4 > button {
-        float: right;
-        margin-right: 1em;
-      }
+      /* Table Formatting */
       #${id_prefix} table {
         width: calc(100% - 2ex);
       }
@@ -851,39 +870,84 @@
         padding-right: 1ex;
       }
       #${id_prefix} div > table td:first-child {
-        width: 120px; /* looks less dumb */
+        width: 120px;
       }
       #${id_prefix} table input,
       #${id_prefix} table button,
       #${id_prefix} table select {
         width: 100%;
-        color: ${text_color};
+        color: ${fg_active_color};
         background-color: ${input_color};
         border: 1px solid ${border_color};
       }
-      #${id_prefix} tr > td > h4 > button {
-        width: 70%;
-        float: right;
+      #${id_prefix} table input:disabled,
+      #${id_prefix} table button:disabled,
+      #${id_prefix} table select:disabled {
+        width: 100%;
+        color: ${fg_inactive_color};
+        background-color: ${bg_inactive_color};
+        border: 1px solid ${border_color};
       }
       #${id_prefix} input[type=number] {
         appearance: textfield;
       }
       #${id_prefix} hr {
-        border: 1px solid ${text_color};
+        border: 1px solid ${fg_active_color};
+      }
+      #${id_prefix} th {
+        text-align: left;
       }
       #${id_prefix} table input[type="checkbox"] {
-        width: auto; /* left align */
-        margin-right: 1ex; /* checkbox are nicer */
+        width: auto;
+        margin-right: 1ex;
       }
       #${id_prefix}_show_hide {
-        background: ${bg_color};
-        color: ${text_color};
         border: 1px solid ${border_color};
         width: 20px;
         height: 60px;
         position: absolute;
         right: calc(0px + ${editor_width_px}px);
+      }
+      /* Section Show/Hide Button */
+      #${id_prefix} div > h4 > button {
+        float: right;
+        margin-right: 1em;
+      }
+      /* Subtable Show/Hide Button (tail table mostly) */
+      #${id_prefix} tr > td > h4 > button {
+        width: 70%;
+        float: right;
+      }
+      /* Navigation Tabs */
+      #${id_prefix} nav {
+        height: 20px;
+        position: relative;
+      }
+      #${id_prefix} nav > span {
+        color: ${fg_inactive_color};
+        background-color: ${bg_inactive_color};
+        border: 1px solid #000;
+        border-bottom: 0px;
+        margin-left: 1ex;
+        padding: 0.5ex 1em;
+        cursor: pointer;
+        font-weight: bold;
+        position: relative;
+        bottom: 2px;
+      }
+      #${id_prefix} nav > span.active {
+        color: ${fg_active_color};
+        background-color: ${bg_active_color};
+        cursor: auto;
+        bottom: 1px;
+      }
+      #${id_prefix} div > div {
+        display: none;
+      }
+      #${id_prefix} div > div.active {
+        display: block;
       }`;
+
       document.head.appendChild(style);
     }
 
@@ -919,6 +983,38 @@
       editor_title.appendChild(editor_link);
       editor_app.appendChild(editor_title);
 
+      // navigation tabs
+      const nav_base = document.createElement('nav');
+      editor_app.appendChild(nav_base);
+
+      // profile tab
+      const nav_tab_profile = document.createElement('span');
+      nav_tab_profile.textContent = 'Profile';
+      nav_tab_profile.className = 'active';
+      nav_base.appendChild(nav_tab_profile);
+
+      // body tab
+      const nav_tab_body = document.createElement('span');
+      nav_tab_body.textContent = 'Body';
+      nav_base.appendChild(nav_tab_body);
+
+      nav_tab_profile.onclick = function () {
+        if(ui_profile != null && ui_body != null) {
+          nav_tab_body.className = '';
+          ui_body.className = '';
+          nav_tab_profile.className = 'active';
+          ui_profile.className = 'active';
+        }
+      };
+      nav_tab_body.onclick = function () {
+        if(ui_profile != null && ui_body != null) {
+          nav_tab_profile.className = '';
+          ui_profile.className = '';
+          nav_tab_body.className = 'active';
+          ui_body.className = 'active';
+        }
+      };
+
       // main body
       const editor_body = document.createElement('div');
       editor_body.id = `${id_prefix}_data`;
@@ -930,25 +1026,12 @@
       document.body.appendChild(editor_app);
     }
 
-    function buildUI() {
-      const controls = getById(`${id_prefix}_data`);
-
-      main_data.reset(game_app.pc);
-
-      current_data = main_data;
-
-      // remove all child nodes
-      while (controls.firstChild) {
-        controls.removeChild(controls.firstChild);
-      }
-      controls.appendChild(createHeader('Cheats'));
-      controls.appendChild(buildCheatTable());
-
+    function buildProfileUI(container) {
+      const controls = document.createElement('div');
+      controls.className = 'active';
       {
-        controls.appendChild(createSeperator());
-        const table = buildStatsTable();
-        controls.appendChild(createHeader('Stats', table));
-        controls.appendChild(table);
+        controls.appendChild(createHeader('Cheats'));
+        controls.appendChild(buildCheatTable());
       }
       {
         controls.appendChild(createSeperator());
@@ -958,6 +1041,23 @@
       }
       {
         controls.appendChild(createSeperator());
+        const table = buildStatsTable();
+        controls.appendChild(createHeader('Stats', table));
+        controls.appendChild(table);
+      }
+      {
+        controls.appendChild(createSeperator());
+        const table = buildPregnancyTable();
+        controls.appendChild(createHeader('Pregnancy', table));
+        controls.appendChild(table);
+      }
+      ui_profile = controls;
+      container.appendChild(controls);
+    }
+
+    function buildBodyUI(container) {
+      const controls = document.createElement('div');
+      {
         const table = buildHeadTable();
         controls.appendChild(createHeader('Head', table));
         controls.appendChild(table);
@@ -1018,16 +1118,26 @@
       }
       {
         controls.appendChild(createSeperator());
-        const table = buildPregnancyTable();
-        controls.appendChild(createHeader('Pregnancy', table));
-        controls.appendChild(table);
-      }
-      {
-        controls.appendChild(createSeperator());
         const table = buildAssTable();
         controls.appendChild(createHeader('Ass', table));
         controls.appendChild(table);
       }
+      ui_body = controls;
+      container.appendChild(controls);
+    }
+
+    function buildUI() {
+      const controls = getById(`${id_prefix}_data`);
+      main_data.reset(game_app.pc);
+      current_data = main_data;
+
+      // remove all child nodes
+      while (controls.firstChild) {
+        controls.removeChild(controls.firstChild);
+      }
+
+      buildProfileUI(controls);
+      buildBodyUI(controls);
     }
 
     // This is our 'main' function

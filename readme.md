@@ -1,59 +1,50 @@
-# TitsEdJS
+# TiTsEdJS
+
+TiTsEdJS is a javascript based state editor for the H-game TiTs. It is loaded into the same runtime enivornment as the game itself and edits the variables of the game in real time.
+
+***This is NOT a save editor.*** This is an game state editor.
 
 ## History
 
-So they changed TiTs from Flash to HTML/JS. This has made a lot of people very
-angry and been widely regarded as a bad move. However personally, I think it was
-a great move.
+The popular H-game TiTs made by Fenoxo (and others) changed from Flash to HTML/Javascript. This obviously changed for format of the save files to something a lot more Javascript friendly. Therefore editors that were designed to edit the saves of the original Flash versions do not work on the new version.
 
-However I do not really play TiTs much, and I gave my previous editor TiTsEd
-over to someone else to manage since I have no interest in doing so myself.
+I do not play this game that much, but I did at one point convert a very popular editor for their previous H-game CoC to work with this new game as they used similar save formats.
 
-However there has been much complaint about a lack of an editor, and I get
-messages from time to time about adapting TiTsEd to work with the new JS based
-TiTs.
+However when this change occurred I often got messages and error reports that the editor no longer worked, despite me no longer being the maintainer of the TiTs Save Editor.
 
-This I consider to be a terrible idea, since the platform TiTsEd was built
-upon is rather niche (Windows, so maybe not so niche) and has been a great
-source of annoyance to me for many years and people have contacted me regularly
-over it not working on thier old Amiga or some such.
+I personally did not want to attempt to convert it to the new format as I had no desire to install visual studio or a C# development environment. Therefore I took the path of least resistance and made an editor for HTML/Javascript, which has a very low barrier to entry, both to write and to use.
 
-## How to use this tool?
+## Suggestions
 
-Good question! It's not very straight forward unfortuantely. I'm working on the
-problem, but there is no simple solution due to XSS security.
+I am not at this time accepting suggestions for additional content to the editor. Any suggestion made will likely be ignored. This tool is open source and you may make the modifications yourself if you wish, however I am unlikely to support these.
 
-For the moment you can simply copy and paste the following into your browsers
-javscript console while playing TiTs.
+I also have zero interest in developing plugins for any other browser, however you are free to do so if you wish.
 
-`(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
+## How to install/activate this tool?
 
-On chrome, if you type in `javascript:` and then paste the previous after it in
-the address bar to get the same result. Browsers automatically remove
-`javascript:` when pasted, SO YOU MUST TYPE IT MANUALLY!
+Using this is very simple given the very relaxed nature of Javascript (most the time). You simply need to import the script into the same runtime environment as the game, and it should be fairly self explanatory from there.
 
-### Usage on Download Version?
-So while you can run this entirely offline, it is not very straight forward. You
-can however use this with the download version while online.
+Here are a few methods to do this.
 
-The player that the download version uses has a DevTools console. You just need
-to press Ctrl + Shift + I then paste the following under where it says console.
+1. Use the Firefox plugin. I have released a plugin for use in firefox and only firefox. You can simply [click here to download](https://github.com/Chase-san/TiTsEdJS/releases) this plugin, or go to the releases on the sidebar.
 
-`javascript:(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
+2. You can copy and paste the following into the javascript console while playing. Some browsers prevent copy and paste into the console. You will need to disable this to use this method, or type it out by hand.
 
-A new sidebar should pop up that you can minimise/maximise using the small white
-arrow and now you can close the DevTools using the X in the top right.
+   `(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
 
-### Usage of the Editor itself.
+3. You can copy and paste the following into the URL bar of your browser. Few browsers allow this as it is a major security hole. But this method is very easy. You may be able to simply type in the `javascript:` part and paste the rest. The code is otherwise identical to that found in method 2.
 
-After you have it running it's fairly straight forward. All you do is click a box,
-enter a new value and click back to the game. If you don't understand it, it's
-really not my problem. Why is that you ask? That is due to the fancy disclaimer
-that follows.
+   `javascript:(function(){var s=document.createElement("script");s.src="https://chase-san.github.io/TiTsEdJS/titsed.js";document.head.appendChild(s)})()`
+
+4. You can use this in the offline version of the game as well. By using the key combination `CTRL` + `SHIFT` + `I` you will get a prompt where you can copy and paste the code from method 3 above.
+
+Regardless of which method you use a new sidebar should pop up that you can open and close using the small arrow to the side. If you opened the console you can close it without worry of losing the editor.
+
+## How to make edits using the tool?
+
+After the tool is running there will be multiple options available that map directly to the values in game. Selecting and editing these values will allow you to change the indicated value in game. To view the results you will need to move to enter and exit your status screen. This is a limitation of the game itself.
 
 ## Disclaimer
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
+This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 
 See the License for more details.
