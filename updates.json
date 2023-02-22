@@ -13,6 +13,10 @@
         {
           "version": "0.7",
           "update_link": "https://github.com/Chase-san/TiTsEdJS/releases/download/v0.7/TiTsEdJs-0_7-extension.xpi"
+        },
+        {
+          "version": "0.8",
+          "update_link": "https://github.com/Chase-san/TiTsEdJS/releases/download/v0.8/TiTsEdJs-0_8-extension.xpi"
         }
       ]
     }
